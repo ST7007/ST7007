@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drivers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>🚗 LuxRide - Drivers</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="bookings.html">Bookings</a>
+  <a href="drivers.html">Drivers</a>
+  <a href="add-booking.html">Add Booking</a>
+</nav>
+
+<div class="container">
+  <h2>Add Driver</h2>
+  <input id="name" placeholder="Driver Name">
+  <input id="phone" placeholder="Phone">
+  <input id="commission" placeholder="Commission %" value="85">
+  <button onclick="addDriver()">Add</button>
+
+  <h2>Driver List</h2>
+  <ul id="driverList"></ul>
+</div>
+
+<script>
+function loadDrivers() {
+  fetch("/api/drivers")
+  .then(res => res.json())
+  .then(data => {
+    const list = document.getElementById("driverList");
+    list.innerHTML = "";
+    data.forEach(d => {
+      list.innerHTML += `<li>${d.name} - ${d.phone} (${d.commission}%)</li>`;
+    });
+  });
+}
+
+function addDriver() {
+  fetch("/api/drivers", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: name.value,
+      phone: phone.value,
+      commission: commission.value
+    })
+  }).then(() => loadDrivers());
+}
+
+loadDrivers();
+</script>
+
+</body>
+</html>

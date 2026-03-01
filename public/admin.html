@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LuxRide Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+    h1 { color: #f4a261; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 13px; }
+    th { background-color: #f4a261; color: white; }
+    tbody tr:nth-child(even) { background-color: #f2f2f2; }
+    tbody tr:hover { background-color: #e9c46a; }
+    .search-bar input { padding: 5px; margin-right: 10px; width: 180px; }
+    select, button { padding: 4px; margin: 2px; }
+    .completed { background-color: #ddffdd !important; }
+  </style>
+</head>
+<body>
+  <h1>LuxRide Admin Dashboard – Enquiries</h1>
+
+  <!-- Search Filters -->
+  <div class="search-bar">
+    <input type="text" id="searchName" placeholder="Search by Full Name">
+    <input type="text" id="searchCompany" placeholder="Search by Company">
+    <input type="date" id="searchDate">
+    <button onclick="loadEnquiries()">Search</button>
+  </div>
+
+  <!-- Enquiries Table -->
+  <table id="enquiriesTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Company</th>
+        <th>Email</th>
+        <th>Mobile</th>
+        <th>Route</th>
+        <th>Pickup</th>
+        <th>Vehicle</th>
+        <th>Adult</th>
+        <th>Child <4</th>
+        <th>Child 4-7</th>
+        <th>Luggage</th>
+        <th>Special Req.</th>
+        <th>Driver</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows inserted here -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadEnquiries() {
+      try {
+        const res = await fetch("/api/admin/enquiries", { credentials: "include" });
+        const data = await res.json();
+
+        if (!data.success) {
+          alert("Failed to load enquiries: " + data.message);
+          return;
+        }
+
+        const tableBody = document.querySelector("#enquiriesTable tbody");
+        tableBody.innerHTML = "";
+
+        const searchName = document.getElementById("searchName").value.toLowerCase();
+        const searchCompany = document.getElementById("searchCompany").value.toLowerCase();
+        const searchDate = document.getElementById("searchDate").value;
+
+        data.enquiries
+          .filter(e => {
+            if (searchName && !(e.fullName || "").toLowerCase().includes(searchName)) return false;
+            if (searchCompany && !(e.companyName || "").toLowerCase().includes(searchCompany)) return false;
+            if (searchDate && e.pickupDate !== searchDate) return false;
+            return true;
+          })
+          .forEach(e => {
+            const row = document.createElement("tr");
+
+            // Optional highlight
+            if (e.status === "Completed") row.classList.add("completed");
+            if ((e.adult || 0) >= 5) row.style.backgroundColor = "#ffdddd"; // large group
+
+            row.innerHTML = `
+              <td>${e.id}</td>
+              <td>${e.fullName || ""}</td>
+              <td>${e.companyName || ""}</td>
+              <td>${e.email || ""}</td>
+              <td>${e.mobile || ""}</td>
+              <td>${e.origin || ""} → ${e.destination || ""}</td>
+              <td>${e.pickupDate || ""} ${e.pickupTime || ""}</td>
+              <td>${e.vehicleType || ""}</td>
+              <td>${e.adult || 0}</td>
+              <td>${e.childUnder4 || 0}</td>
+              <td>${e.child4to7 || 0}</td>
+              <td>${(e.smallLuggage||0) + (e.mediumLuggage||0) + (e.largeLuggage||0)}</td>
+              <td>${e.specialRequirements || ""}</td>
+              <td>
+                <select onchange="assignDriver(${e.id}, this.value)">
+                  <option value="">--Assign--</option>
+                  <option value="1">Driver 1</option>
+                  <option value="2">Driver 2</option>
+                  <option value="3">Driver 3</option>
+                </select>
+              </td>
+              <td>${e.status || "Pending"}</td>
+              <td>${e.created_at || ""}</td>
+              <td>
+                <button onclick="markCompleted(${e.id})">Complete</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+      } catch (err) {
+        console.error("Error loading enquiries:", err);
+      }
+    }
+
+    // Assign driver
+    async function assignDriver(enquiryId, driverId) {
+      if (!driverId) return;
+      try {
+        const res = await fetch(`/api/bookings/${enquiryId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ driver_id: driverId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Driver assigned successfully!");
+          loadEnquiries();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to assign driver.");
+      }
+    }
+
+    // Mark enquiry as completed
+    async function markCompleted(enquiryId) {
+      try {
+        const res = await fetch(`/api/bookings/${enquiryId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Completed" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Enquiry marked as Completed!");
+          loadEnquiries();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update status.");
+      }
+    }
+
+    // Auto-refresh every 10 seconds
+    setInterval(loadEnquiries, 10000);
+
+    // Load on page load
+    window.onload = loadEnquiries;
+  </script>
+</body>
+</html>

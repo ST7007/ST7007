@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bookings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>🚗 LuxRide - Bookings</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="bookings.html">Bookings</a>
+  <a href="drivers.html">Drivers</a>
+  <a href="add-booking.html">Add Booking</a>
+</nav>
+
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Car</th>
+        <th>Price</th>
+        <th>Driver</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="bookings"></tbody>
+  </table>
+</div>
+
+<script>
+fetch("/api/bookings")
+.then(res => res.json())
+.then(data => {
+  const table = document.getElementById("bookings");
+  data.forEach(b => {
+    table.innerHTML += `
+      <tr>
+        <td>${b.id}</td>
+        <td>${b.customer}</td>
+        <td>${b.car_type}</td>
+        <td>$${b.price}</td>
+        <td>${b.driver_name || "Unassigned"}</td>
+        <td>${b.status}</td>
+      </tr>
+    `;
+  });
+});
+</script>
+
+</body>
+</html>

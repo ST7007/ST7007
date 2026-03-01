@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Booking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>🚗 LuxRide - Add Booking</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="bookings.html">Bookings</a>
+  <a href="drivers.html">Drivers</a>
+  <a href="add-booking.html">Add Booking</a>
+</nav>
+
+<div class="container">
+  <input id="customer" placeholder="Customer Name"><br><br>
+  <input id="pickup" placeholder="Pickup Location"><br><br>
+  <input id="dropoff" placeholder="Dropoff Location"><br><br>
+  <input id="car_type" placeholder="Car Type"><br><br>
+  <input id="price" placeholder="Price"><br><br>
+  <input id="date" type="date"><br><br>
+  <button onclick="addBooking()">Save Booking</button>
+</div>
+
+<script>
+function addBooking() {
+  fetch("/api/bookings", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      customer: customer.value,
+      pickup: pickup.value,
+      dropoff: dropoff.value,
+      car_type: car_type.value,
+      price: price.value,
+      date: date.value
+    })
+  }).then(() => {
+    alert("Booking Saved!");
+    window.location.href = "bookings.html";
+  });
+}
+</script>
+
+</body>
+</html>

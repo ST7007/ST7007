@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Driver</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+
+<h2>Create Driver</h2>
+
+<form id="createDriverForm">
+  <label>Driver Name</label><br>
+  <input type="text" id="name" required><br><br>
+
+  <label>Vehicle Model</label><br>
+  <input type="text" id="vehicle" required><br><br>
+
+  <label>Plate Number</label><br>
+  <input type="text" id="plateNumber" required><br><br>
+
+  <label>Password</label><br>
+  <input type="password" id="password" required><br><br>
+
+  <button type="submit">Create Driver</button>
+</form>
+
+<br>
+<div id="message"></div>
+
+<script>
+document.getElementById('createDriverForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value;
+  const vehicle = document.getElementById('vehicle').value;
+  const plateNumber = document.getElementById('plateNumber').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const response = await fetch('/api/admin/create-driver', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, vehicle, plateNumber, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      document.getElementById('message').innerText = data.error || "Error creating driver";
+      return;
+    }
+
+    document.getElementById('message').innerText = "Driver created successfully!";
+    document.getElementById('createDriverForm').reset();
+
+  } catch (err) {
+    document.getElementById('message').innerText = "Server error";
+  }
+});
+</script>
+
+</body>
+</html>

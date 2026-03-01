@@ -1,0 +1,45 @@
+<form id="enquiryForm">
+  <input type="text" name="fullName" placeholder="Full Name" required>
+  <input type="text" name="companyName" placeholder="Company Name">
+  <input type="email" name="email" placeholder="Email">
+  <input type="text" name="mobile" placeholder="Mobile">
+  <input type="date" name="pickupDate" required>
+  <input type="time" name="pickupTime" required>
+  <input type="text" name="origin" placeholder="Origin">
+  <input type="text" name="destination" placeholder="Destination">
+  <input type="number" name="adult" placeholder="Adults">
+  <input type="number" name="childUnder4" placeholder="Children <4">
+  <input type="number" name="child4to7" placeholder="Children 4-7">
+  <input type="number" name="smallLuggage" placeholder="Small Luggage">
+  <input type="number" name="mediumLuggage" placeholder="Medium Luggage">
+  <input type="number" name="largeLuggage" placeholder="Large Luggage">
+  <select name="vehicleType">
+    <option>MPV 6 Seater</option>
+    <option>Luxury Sedan</option>
+    <option>7 Seater</option>
+  </select>
+  <textarea name="specialRequirements" placeholder="Special Requirements"></textarea>
+  <button type="submit">Submit Enquiry</button>
+</form>
+
+<script>
+document.getElementById("enquiryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+
+  const res = await fetch("/submit-enquiry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+  if(result.success){
+    alert("Enquiry submitted successfully! ID: " + result.enquiryId);
+    e.target.reset();
+  } else {
+    alert("Submission failed: " + result.message);
+  }
+});
+</script>

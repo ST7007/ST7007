@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LuxRide Enquiry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial; background:#f4f4f4; margin:0; padding:0; }
+        header { background: orange; color:white; padding:20px; text-align:center; font-size:24px; font-weight:bold; }
+        .container { max-width:900px; margin:30px auto; background:white; padding:30px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+        .grid { display:grid; grid-template-columns:1fr 1fr; column-gap:80px; row-gap:30px; }
+        .full-width { grid-column:1 / -1; }
+        label { font-weight:bold; display:block; margin-bottom:5px; }
+        input, select, textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:14px; }
+        textarea { resize: vertical; min-height:80px; }
+        .row { display:flex; gap:12px; }
+        .row div { flex:0; text-align:left; }
+        .row input[type="number"] { width:70px; margin:8px auto 0; display:block; }
+        .consent { display:flex; align-items:center; margin-top:10px; }
+        .consent input { width:auto; margin-right:10px; }
+        button { width:100%; padding:14px; background:orange; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer; margin-top:20px; font-size:16px; }
+        button:hover { background:#333; }
+        #thankYou { margin-top:20px; font-weight:bold; color:green; }
+        @media (max-width:768px) { .grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<header>LuxRide Enquiry</header>
+<div class="container">
+
+<form id="enquiryForm">
+<div class="grid">
+
+    <div><label>Full Name *</label><input type="text" name="fullName" required></div>
+    <div><label>Company Name</label><input type="text" name="companyName"></div>
+    <div><label>Email Address *</label><input type="email" name="email" required></div>
+    <div><label>Mobile Number *</label><input type="text" name="mobile" required></div>
+    <div><label>Date of Pickup *</label><input type="date" name="pickupDate" id="pickupDate" required></div>
+    <div><label>Time of Pickup</label><input type="time" name="pickupTime" id="pickupTime"></div>
+
+    <div><label>Pickup Location *</label><input type="text" id="origin" name="origin" required></div>
+    <div><label>Drop-off Location *</label><input type="text" id="destination" name="destination" required></div>
+
+    <div>
+        <label>Number of Passengers *</label>
+        <div class="row">
+            <div>Adult<input type="number" name="adult" min="0" value="0" required></div>
+            <div>Child &lt;4<input type="number" name="childUnder4" min="0" value="0"></div>
+            <div>Child 4-7<input type="number" name="child4to7" min="0" value="0"></div>
+        </div>
+    </div>
+
+    <div>
+        <label>Number of Luggage</label>
+        <div class="row">
+            <div>Small<input type="number" name="smallLuggage" min="0" value="0"></div>
+            <div>Medium<input type="number" name="mediumLuggage" min="0" value="0"></div>
+            <div>Large<input type="number" name="largeLuggage" min="0" value="0"></div>
+        </div>
+    </div>
+
+    <div class="full-width row">
+        <div style="flex:1; min-width:250px; margin-right:20px;">
+        <label>Vehicle Type *</label>
+        <select name="vehicleType" id="vehicleType" required>
+            <option value="">Select Vehicle</option>
+            <option value="MPV 6 Seater">MPV 6 Seater Grand Scenic</option>
+            <option value="MPV 6 Seater">MPV 6 Seater Alphard / Vellfire</option>
+            <option value="Luxury Sedan">Luxury Sedan Mercedes-Benz E-Class</option>
+            <option value="Luxury Sedan">Luxury Sedan Mercedes-Benz S-Class</option>
+            <option value="Luxury Sedan">Luxury Sedan BMW 5 Series</option>
+            <option value="Luxury Sedan">Luxury Sedan BMW 7 Series</option>
+        </select>
+    </div>
+    <div style="flex:1; min-width:250px;">
+        <label>Special Requirements</label>
+        <textarea name="specialRequirements"></textarea>
+    </div>
+</div>
+    <div class="full-width consent">
+        <input type="checkbox" name="consent" id="consentCheckbox" required>
+        I agree to be contacted by LuxRide regarding my enquiry*
+    </div>
+
+    <div class="full-width"><button type="submit">Submit Enquiry</button></div>
+</div>
+</form>
+
+<div id="thankYou"></div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCU0_YSYwUpaa73zlS3Soj-ggWrkp6XH0w&libraries=places"></script>
+<script>
+function initAutocomplete() {
+    const origin = document.getElementById("origin");
+    const destination = document.getElementById("destination");
+    new google.maps.places.Autocomplete(origin);
+    new google.maps.places.Autocomplete(destination);
+
+    // Set default pickup/drop-off values
+    origin.value = "Somerset Road, 111 Somerset, Singapore";
+    destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
+
+    // Set default vehicle type
+    document.getElementById("vehicleType").value = "MPV 6 Seater";
+
+    // Check the consent checkbox
+    document.getElementById("consentCheckbox").checked = true;
+
+    // Auto current date
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    document.getElementById("pickupDate").value = `${yyyy}-${mm}-${dd}`;
+
+    // Auto current time
+    const hh = String(today.getHours()).padStart(2,'0');
+    const min = String(today.getMinutes()).padStart(2,'0');
+    document.getElementById("pickupTime").value = `${hh}:${min}`;
+}
+window.onload = initAutocomplete;
+
+// AJAX form submit
+document.getElementById("enquiryForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    fetch("/submit-enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.success){
+            document.getElementById("thankYou").innerHTML = `Thank you <strong>${res.fullName}</strong>, we will contact you soon.`;
+            this.reset();
+            // Reset defaults after reset
+            initAutocomplete();
+        } else {
+            document.getElementById("thankYou").innerText = res.message;
+        }
+    });
+});
+</script>
+
+</body>
+</html>

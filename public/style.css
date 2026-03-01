@@ -1,0 +1,55 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  margin: 0;
+}
+
+header {
+  background: #ff6600;
+  padding: 15px;
+  font-size: 20px;
+}
+
+nav {
+  background: #000;
+  padding: 10px;
+}
+
+nav a {
+  color: white;
+  margin-right: 20px;
+  text-decoration: none;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #222;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+button {
+  background: #ff6600;
+  border: none;
+  padding: 8px 15px;
+  color: white;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table, th, td {
+  border: 1px solid #444;
+}
+
+th, td {
+  padding: 8px;
+}
