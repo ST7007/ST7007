@@ -113,7 +113,7 @@ button:hover {
 <header>Customer Enquiry</header>
 <div class="container">
 
-<form id="enquiryForm">
+<form id="enquiryForm" autocomplete="off">
 <div class="grid">
 
     <div><label>Full Name *</label><input type="text" name="fullName" required></div>
@@ -196,19 +196,19 @@ button:hover {
 <!-- Google Maps Places API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 <script>
+let originAutocomplete, destinationAutocomplete;
+
 function initAutocomplete() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
 
-    // Initialize autocomplete first
-    const originAutocomplete = new google.maps.places.Autocomplete(origin);
-    const destinationAutocomplete = new google.maps.places.Autocomplete(destination);
+    originAutocomplete = new google.maps.places.Autocomplete(origin);
+    destinationAutocomplete = new google.maps.places.Autocomplete(destination);
 
-    // Set default values AFTER autocomplete
-    origin.value = "Somerset Road, 111 Somerset, Singapore";
-    destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
+    // Default values
+    if(!origin.value) origin.value = "Somerset Road, 111 Somerset, Singapore";
+    if(!destination.value) destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
 
-    // Default selections
     document.getElementById("vehicleType").value = "MPV 6 Seater Grand Scenic";
     document.getElementById("consentCheckbox").checked = true;
 
