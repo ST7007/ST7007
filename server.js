@@ -1,3 +1,4 @@
+// ================= SERVER.JS =================
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
@@ -7,21 +8,21 @@ const axios = require("axios");
 const app = express();
 const PORT = 3000;
 
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(session({
   secret: "luxride-secret",
   resave: false,
   saveUninitialized: false
 }));
-
 app.use(express.static(path.join(__dirname, "public")));
 
+// ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
 
-// ================= DATABASE =================
 db.serialize(() => {
+  // Admins table
   db.run(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,6 +33,7 @@ db.serialize(() => {
     )
   `);
 
+  // Drivers table
   db.run(`
     CREATE TABLE IF NOT EXISTS drivers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +44,7 @@ db.serialize(() => {
     )
   `);
 
+  // Bookings table
   db.run(`
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +61,7 @@ db.serialize(() => {
     )
   `);
 
+  // Enquiries table
   db.run(`
     CREATE TABLE IF NOT EXISTS enquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,8 +99,6 @@ app.get("/api/dashboard", (req, res) => {
 });
 
 // ================= BOOKINGS =================
-
-// Get all bookings
 app.get("/api/bookings", (req, res) => {
   db.all(`
     SELECT bookings.*, drivers.name as driver_name
@@ -109,7 +111,6 @@ app.get("/api/bookings", (req, res) => {
   });
 });
 
-// Add a new booking
 app.post("/api/bookings", (req, res) => {
   const { fullName, email, mobile, origin, destination, vehicleType, fare, driver_id } = req.body;
   const createdAt = new Date().toLocaleString();
@@ -124,7 +125,6 @@ app.post("/api/bookings", (req, res) => {
   });
 });
 
-// Update a booking (status, driver, fare)
 app.put("/api/bookings/:id", (req, res) => {
   const { status, driver_id, fare } = req.body;
 
@@ -140,13 +140,13 @@ app.put("/api/bookings/:id", (req, res) => {
   });
 });
 
-// Delete a booking
 app.delete("/api/bookings/:id", (req, res) => {
   db.run("DELETE FROM bookings WHERE id = ?", [req.params.id], function(err) {
     if (err) return res.status(500).json({ success: false, message: err.message });
     res.json({ success: true, deletedRows: this.changes });
   });
 });
+
 // ================= DRIVERS =================
 app.get("/api/drivers", (req, res) => {
   db.all("SELECT * FROM drivers", (err, rows) => res.json(rows));
@@ -164,7 +164,6 @@ app.post("/api/drivers", (req, res) => {
 app.post("/api/admin/login", (req, res) => {
   const mobile = req.body.username?.trim();
   const password = req.body.password?.trim();
-
   if (!mobile || !password) return res.status(400).json({ message: "Missing fields" });
 
   db.get("SELECT * FROM admins WHERE mobile=? AND password=?", [mobile, password], (err, row) => {
@@ -172,24 +171,6 @@ app.post("/api/admin/login", (req, res) => {
     req.session.admin = row;
     res.json({ success: true });
   });
-});
-
-app.get("/create-admin", (req, res) => {
-  const createdAt = new Date().toLocaleString();
-  db.run(`INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)`,
-    ["Kelvin", "91234567", "1234", createdAt],
-    function(err) { if (err) return res.send("Admin already exists"); res.send("Admin created"); }
-  );
-});
-
-app.post("/create-admin", (req, res) => {
-  const { name, mobile, password } = req.body;
-  if (!name || !mobile || !password) return res.send("All fields required");
-  const createdAt = new Date().toLocaleString();
-  db.run(`INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)`,
-    [name, mobile, password, createdAt],
-    function(err) { res.send(err ? "Admin exists or DB error" : "Admin created"); }
-  );
 });
 
 // ================= DRIVER LOGIN =================
@@ -207,7 +188,7 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
 });
 
-// ================= FARE =================
+// ================= FARE CALCULATION =================
 const rates = { airport: { "MPV 6 Seater": 70, "Luxury Sedan": 80 } };
 function calculateFare(vehicle, km, pickupTime) {
   if (!rates.airport[vehicle]) return null;
@@ -225,23 +206,22 @@ app.post("/calculate-fare", async (req, res) => {
     });
     const km = response.data.rows[0].elements[0].distance.value / 1000;
     res.json({ fare: calculateFare(vehicleType, km, pickupTime), distance: km.toFixed(2) });
-  } catch { res.status(500).json({ error: "Distance calculation failed" }); }
+  } catch {
+    res.status(500).json({ error: "Distance calculation failed" });
+  }
 });
 
 // ================= ENQUIRIES =================
-
 app.post("/submit-enquiry", (req, res) => {
   const createdAt = new Date().toLocaleString();
-
-  // Map all expected fields from request body
   const fields = [
     "fullName","companyName","email","mobile","pickupDate","pickupTime",
     "origin","destination","adult","childUnder4","child4to7",
     "smallLuggage","mediumLuggage","largeLuggage",
     "vehicleType","specialRequirements"
-  ].map(f => req.body[f] || null); // fallback to null if field missing
+  ].map(f => req.body[f] || null);
 
-  fields.push(createdAt); // timestamp
+  fields.push(createdAt);
 
   db.run(`
     INSERT INTO enquiries (
@@ -252,13 +232,8 @@ app.post("/submit-enquiry", (req, res) => {
       vehicleType, specialRequirements, created_at
     ) VALUES (${fields.map(() => '?').join(',')})
   `, fields, function(err) {
-    if (err) {
-      console.error("Enquiry insert failed:", err.message);
-      return res.status(500).json({ success: false, message: err.message });
-    }
+    if (err) return res.status(500).json({ success: false, message: err.message });
     const enquiryId = this.lastID;
-
-    console.log("Enquiry inserted with ID:", enquiryId);
 
     // Also insert into bookings as Pending
     const bookingFields = [
@@ -268,8 +243,8 @@ app.post("/submit-enquiry", (req, res) => {
       req.body.origin || "",
       req.body.destination || "",
       req.body.vehicleType || "",
-      0, // fare placeholder
-      null, // driver_id
+      0,
+      null,
       createdAt
     ];
 
@@ -279,20 +254,18 @@ app.post("/submit-enquiry", (req, res) => {
       VALUES (${bookingFields.map(() => '?').join(',')})
     `, bookingFields, function(err2) {
       if (err2) console.error("Booking insert failed:", err2.message);
-      res.json({ success: true, enquiryId });
+
+      // Send success + fullName back to frontend
+      res.json({ success: true, fullName: req.body.fullName || "", enquiryId });
     });
   });
 });
 
-// Fetch all enquiries for admin dashboard
+// Fetch enquiries for admin
 app.get("/api/admin/enquiries", (req, res) => {
   if (!req.session.admin) return res.status(401).json({ message: "Unauthorized" });
-
   db.all("SELECT * FROM enquiries ORDER BY id DESC", (err, rows) => {
-    if (err) {
-      console.error("Failed to fetch enquiries:", err.message);
-      return res.status(500).json({ success: false, message: err.message });
-    }
+    if (err) return res.status(500).json({ success: false, message: err.message });
     res.json({ success: true, enquiries: rows });
   });
 });

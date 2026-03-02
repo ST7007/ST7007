@@ -45,8 +45,8 @@ header {
 label { 
     font-weight: bold; 
     display: block; 
-    margin-bottom: 4px; 
-    font-size: 13px;
+    margin-bottom: 7px; 
+    font-size: 15px;
 }
 input, select, textarea { 
     width: 100%; 
@@ -60,7 +60,7 @@ input, select, textarea {
 }
 textarea { 
     resize: vertical; 
-    min-height: 50px; 
+    min-height: 80px; 
 }
 .row {
     display: flex;
@@ -76,7 +76,7 @@ textarea {
     display: flex; 
     align-items: center; 
     margin-top: 12px; 
-    font-size: 13px;
+    font-size: 15px;
 }
 .consent input { 
     width: auto; 
@@ -92,7 +92,7 @@ button {
     border-radius: 6px; 
     cursor: pointer; 
     margin-top: 12px; 
-    font-size: 14px; 
+    font-size: 15px; 
 }
 button:hover { 
     background: #333; 
@@ -131,7 +131,7 @@ button:hover {
     <div><label>Pickup Location *</label><input type="text" id="origin" name="origin" required></div>
     <div><label>Drop-off Location *</label><input type="text" id="destination" name="destination" required></div>
 
-    <div class="full-width">
+    <div class="half-width">
         <label>Number of Passengers *</label>
         <div class="row">
             <div>
@@ -149,7 +149,7 @@ button:hover {
         </div>
     </div>
 
-    <div class="full-width">
+    <div class="half-width">
         <label>Number of Luggage</label>
         <div class="row">
             <div>
@@ -167,7 +167,7 @@ button:hover {
         </div>
     </div>
 
-    <div class="full-width">
+    <div class="half-width">
         <label>Vehicle Type *</label>
         <select name="vehicleType" id="vehicleType" required>
             <option value="">Select Vehicle</option>
@@ -180,7 +180,7 @@ button:hover {
         </select>
     </div>
 
-    <div class="full-width">
+    <div class="half-width">
         <label>Special Requirements</label>
         <textarea name="specialRequirements"></textarea>
     </div>
@@ -205,11 +205,15 @@ button:hover {
 function initAutocomplete() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
+    
+    const options = {
+    componentRestrictions: { country: ["SG", "MY"] } // Only Singapore & Malaysia
+};
     new google.maps.places.Autocomplete(origin);
     new google.maps.places.Autocomplete(destination);
 
-    origin.value = "Somerset Road, 111 Somerset, Singapore";
-    destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
+    origin.value = "10 Marina Boulevard, Singapore";
+    destination.value = "Changi Airport Terminal 1 Departure, Singapore";
 
     document.getElementById("vehicleType").value = "MPV 6 Seater Grand Scenic";
     document.getElementById("consentCheckbox").checked = true;
