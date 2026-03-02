@@ -1,36 +1,12 @@
-// ================= SERVER.JS =================
-
 const express = require("express");
 const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
 
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, "public")));
-
-// Default route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
-
-// ================= MIDDLEWARE =================
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(session({
-  secret: "luxride-secret",
-  resave: false,
-  saveUninitialized: false
-}));
-app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
-
-// ================= DATABASE =================
+// Connect to database
 const db = new sqlite3.Database("./database.db");
+// ================= DATABASE =================
 
 // Create tables if not exist
 db.serialize(() => {
@@ -282,4 +258,5 @@ app.get("/api/admin/enquiries", (req, res) => {
 });
 
 // ================= START SERVER =================
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚗 LuxRide running at http://localhost:${PORT}`));
