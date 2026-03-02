@@ -155,6 +155,30 @@ app.post("/api/drivers", (req, res) => {
   `, [name, mobile, password, commission || 85], () => res.json({ success: true }));
 });
 
+// ================= CREATE ADMIN =================
+app.post("/create-admin", (req, res) => {
+  const { name, mobile, password } = req.body;
+
+  if (!name || !mobile || !password) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  const createdAt = new Date().toLocaleString();
+
+  db.run(
+    "INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)",
+    [name, mobile, password, createdAt],
+    function(err) {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ success: false, message: "Mobile may already exist" });
+      }
+      res.json({ success: true, adminId: this.lastID, message: "Admin created successfully" });
+    }
+  );
+});
+
+
 // ================= ADMIN LOGIN =================
 app.post("/api/admin/login", (req, res) => {
   const mobile = req.body.username?.trim();
