@@ -3,9 +3,15 @@ const express = require("express");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const session = require("express-session");
-const axios = require("axios");
-const app = express();
+const multer = require("multer");
 const bcrypt = require("bcrypt");
+const fs = require("fs");
+
+const app = express();
+
+// Ensure uploads folder exists
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
+
 // ================= MIDDLEWARE =================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -21,6 +27,7 @@ app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 const db = new sqlite3.Database("./database.db");
 
 db.serialize(() => {
+  // Admins table
   db.run(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,16 +38,36 @@ db.serialize(() => {
     )
   `);
 
+  // Drivers table
   db.run(`
     CREATE TABLE IF NOT EXISTS drivers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT,
+      fullName TEXT,
+      email TEXT UNIQUE,
       mobile TEXT UNIQUE,
+      address TEXT,
       password TEXT,
-      commission INTEGER DEFAULT 85
+      dob TEXT,
+      vehicleModel TEXT,
+      plateNumber TEXT,
+      carRegDate TEXT,
+      coeExpiredDate TEXT,
+      insuranceStartDate TEXT,
+      insuranceExpiredDate TEXT,
+      icFront TEXT,
+      icBack TEXT,
+      drivingLicense TEXT,
+      phvLicense TEXT,
+      carLogcard TEXT,
+      carInsurance TEXT,
+      emergencyName TEXT,
+      emergencyPhone TEXT,
+      created_at TEXT,
+      status TEXT DEFAULT 'Pending'
     )
   `);
 
+  // Bookings table
   db.run(`
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,6 +84,7 @@ db.serialize(() => {
     )
   `);
 
+  // Enquiries table
   db.run(`
     CREATE TABLE IF NOT EXISTS enquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,186 +109,103 @@ db.serialize(() => {
   `);
 });
 
-// ================= DASHBOARD =================
-app.get("/api/dashboard", (req, res) => {
-  db.get("SELECT COUNT(*) as total FROM bookings", (err, total) => {
-    db.get("SELECT SUM(fare) as revenue FROM bookings WHERE status='Completed'", (err2, revenue) => {
-      res.json({
-        totalBookings: total?.total || 0,
-        revenue: revenue?.revenue || 0
-      });
-    });
-  });
-});
-
-// ================= BOOKINGS =================
-app.get("/api/bookings", (req, res) => {
-  db.all(`
-    SELECT bookings.*, drivers.name as driver_name
-    FROM bookings
-    LEFT JOIN drivers ON bookings.driver_id = drivers.id
-    ORDER BY bookings.id DESC
-  `, (err, rows) => {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    res.json({ success: true, bookings: rows });
-  });
-});
-
-app.post("/api/bookings", (req, res) => {
-  const { fullName, email, mobile, origin, destination, vehicleType, fare, driver_id } = req.body;
-  const createdAt = new Date().toLocaleString();
-
-  db.run(`
-    INSERT INTO bookings
-      (fullName, email, mobile, origin, destination, vehicleType, fare, driver_id, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [fullName, email, mobile, origin, destination, vehicleType, fare, driver_id || null, createdAt], function(err) {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    res.json({ success: true, bookingId: this.lastID });
-  });
-});
-
-app.put("/api/bookings/:id", (req, res) => {
-  const { status, driver_id, fare } = req.body;
-  db.run(`
-    UPDATE bookings
-    SET status = COALESCE(?, status),
-        driver_id = COALESCE(?, driver_id),
-        fare = COALESCE(?, fare)
-    WHERE id = ?
-  `, [status, driver_id, fare, req.params.id], function(err) {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    res.json({ success: true, updatedRows: this.changes });
-  });
-});
-
-app.delete("/api/bookings/:id", (req, res) => {
-  db.run("DELETE FROM bookings WHERE id = ?", [req.params.id], function(err) {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    res.json({ success: true, deletedRows: this.changes });
-  });
-});
-
-// ================= DRIVERS =================
-app.get("/api/drivers", (req, res) => {
-  db.all("SELECT * FROM drivers", (err, rows) => res.json(rows));
-});
-
-app.post("/api/drivers", (req, res) => {
-  const { name, mobile, password, commission } = req.body;
-  db.run(`
-    INSERT INTO drivers (name, mobile, password, commission)
-    VALUES (?, ?, ?, ?)
-  `, [name, mobile, password, commission || 85], () => res.json({ success: true }));
-});
-
-// ================= CREATE ADMIN WITH HASHED PASSWORD =================
-app.post("/create-admin", async (req, res) => {
-  const { name, mobile, password } = req.body;
-
-  if (!name || !mobile || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
+// ================= MULTER UPLOAD SETUP =================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;
+    cb(null, uniqueName);
   }
+});
+const upload = multer({ storage });
 
+// ================= DRIVER REGISTRATION =================
+app.post("/register-driver", upload.fields([
+  { name: "icFront", maxCount: 1 },
+  { name: "icBack", maxCount: 1 },
+  { name: "drivingLicense", maxCount: 1 },
+  { name: "phvLicense", maxCount: 1 },
+  { name: "carLogcard", maxCount: 1 },
+  { name: "carInsurance", maxCount: 1 }
+]), async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 salt rounds
+    const {
+      fullName, email, mobile, address, password, dob,
+      vehicleModel, plateNumber, emergencyName, emergencyPhone,
+      carRegDate, coeExpiredDate, insuranceStartDate, insuranceExpiredDate
+    } = req.body;
+
+    // Check required text fields
+    if (!fullName || !email || !mobile || !password) {
+      return res.status(400).json({ success: false, message: "Please fill all required fields" });
+    }
+
+    // List of required documents
+    const requiredFiles = ['icFront','icBack','drivingLicense','phvLicense','carLogcard','carInsurance'];
+
+    // Check if all required files are uploaded
+    for(let f of requiredFiles){
+      if(!req.files?.[f]){
+        return res.status(400).json({ success: false, message: `Please upload all documents. Missing: ${f}` });
+      }
+    }
+
+    // Assign uploaded files
+    const icFront = req.files.icFront[0].filename;
+    const icBack = req.files.icBack[0].filename;
+    const drivingLicense = req.files.drivingLicense[0].filename;
+    const phvLicense = req.files.phvLicense[0].filename;
+    const carLogcard = req.files.carLogcard[0].filename;
+    const carInsurance = req.files.carInsurance[0].filename;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const createdAt = new Date().toLocaleString();
 
-    db.run(
-      "INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)",
-      [name, mobile, hashedPassword, createdAt],
+    // Insert into database
+    db.run(`
+      INSERT INTO drivers
+      (fullName,email,mobile,address,password,dob,vehicleModel,plateNumber,
+       carRegDate,coeExpiredDate,insuranceStartDate,insuranceExpiredDate,
+       icFront,icBack,drivingLicense,phvLicense,carLogcard,carInsurance,
+       emergencyName,emergencyPhone,created_at,status)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `,
+      [fullName,email,mobile,address,hashedPassword,dob,vehicleModel,plateNumber,
+       carRegDate,coeExpiredDate,insuranceStartDate,insuranceExpiredDate,
+       icFront,icBack,drivingLicense,phvLicense,carLogcard,carInsurance,
+       emergencyName,emergencyPhone,createdAt,'Pending'],
       function(err) {
         if (err) {
-          console.error(err.message);
-          return res.status(500).json({ success: false, message: "Mobile may already exist" });
+          console.error("DB Error:", err.message);
+          return res.status(500).json({ success: false, message: err.message });
         }
-        res.json({ success: true, adminId: this.lastID, message: "Admin created successfully" });
+        res.json({ success: true, message: "Registration submitted successfully!", driverId: this.lastID });
       }
     );
+
   } catch (err) {
-    console.error(err);
+    console.error("Server Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-
-// ================= ADMIN LOGIN =================
-app.post("/api/admin/login", async (req, res) => {
-  const mobile = req.body.username?.trim();
-  const password = req.body.password?.trim();
-  if (!mobile || !password) return res.status(400).json({ message: "Missing fields" });
-
-  db.get("SELECT * FROM admins WHERE mobile=?", [mobile], async (err, row) => {
-    if (err) return res.status(500).json({ message: err.message });
-    if (!row) return res.status(401).json({ message: "Invalid login" });
-
-    const match = await bcrypt.compare(password, row.password);
-    if (!match) return res.status(401).json({ message: "Invalid login" });
-
-    req.session.admin = row;
-    res.json({ success: true, message: "Login successful" });
-  });
-});
-
-// ================= LOGOUT =================
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/"));
-});
-
-// ================= ENQUIRIES =================
-app.post("/submit-enquiry", (req, res) => {
-  const createdAt = new Date().toLocaleString();
-  const fields = [
-    "fullName","companyName","email","mobile","pickupDate","pickupTime",
-    "origin","destination","adult","childUnder4","child4to7",
-    "smallLuggage","mediumLuggage","largeLuggage",
-    "vehicleType","specialRequirements"
-  ].map(f => req.body[f] || null);
-
-  fields.push(createdAt);
-
-  db.run(`
-    INSERT INTO enquiries (
-      fullName, companyName, email, mobile,
-      pickupDate, pickupTime, origin, destination,
-      adult, childUnder4, child4to7,
-      smallLuggage, mediumLuggage, largeLuggage,
-      vehicleType, specialRequirements, created_at
-    ) VALUES (${fields.map(() => '?').join(',')})
-  `, fields, function(err) {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    const enquiryId = this.lastID;
-
-    // Also insert into bookings as Pending
-    const bookingFields = [
-      req.body.fullName || "",
-      req.body.email || "",
-      req.body.mobile || "",
-      req.body.origin || "",
-      req.body.destination || "",
-      req.body.vehicleType || "",
-      0,
-      null,
-      createdAt
-    ];
-
-    db.run(`
-      INSERT INTO bookings
-        (fullName, email, mobile, origin, destination, vehicleType, fare, driver_id, created_at)
-      VALUES (${bookingFields.map(() => '?').join(',')})
-    `, bookingFields, function(err2) {
-      if (err2) console.error("Booking insert failed:", err2.message);
-      res.json({ success: true, fullName: req.body.fullName || "", enquiryId });
+// ================= OTHER ROUTES =================
+// Dashboard
+app.get("/api/dashboard", (req, res) => {
+  db.get("SELECT COUNT(*) as totalBookings FROM bookings", (err1, totalBookings) => {
+    db.get("SELECT SUM(fare) as revenue FROM bookings WHERE status='Completed'", (err2, revenue) => {
+      db.get("SELECT COUNT(*) as totalEnquiries FROM enquiries", (err3, totalEnquiries) => {
+        db.get("SELECT COUNT(*) as totalDrivers FROM drivers", (err4, totalDrivers) => {
+          res.json({
+            totalBookings: totalBookings?.totalBookings || 0,
+            revenue: revenue?.revenue || 0,
+            totalEnquiries: totalEnquiries?.totalEnquiries || 0,
+            totalDrivers: totalDrivers?.totalDrivers || 0
+          });
+        });
+      });
     });
-  });
-});
-
-// ================= FETCH ENQUIRIES =================
-app.get("/api/admin/enquiries", (req, res) => {
-  if (!req.session.admin) return res.status(401).json({ message: "Unauthorized" });
-  db.all("SELECT * FROM enquiries ORDER BY id DESC", (err, rows) => {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-    res.json({ success: true, enquiries: rows });
   });
 });
 
