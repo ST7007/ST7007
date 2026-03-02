@@ -1,16 +1,27 @@
+// ================= SERVER.JS =================
 const express = require("express");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
+const session = require("express-session");
+const axios = require("axios");
 
 const app = express();
 
-// Connect to database
-const db = new sqlite3.Database("./database.db");
-// ================= DATABASE =================
+// ================= MIDDLEWARE =================
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(session({
+  secret: "luxride-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 24*60*60*1000 } // 1 day
+}));
+app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 
-// Create tables if not exist
+// ================= DATABASE =================
+const db = new sqlite3.Database("./database.db");
+
 db.serialize(() => {
-  // Admins
   db.run(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +32,6 @@ db.serialize(() => {
     )
   `);
 
-  // Drivers
   db.run(`
     CREATE TABLE IF NOT EXISTS drivers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +42,6 @@ db.serialize(() => {
     )
   `);
 
-  // Bookings
   db.run(`
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +58,6 @@ db.serialize(() => {
     )
   `);
 
-  // Enquiries
   db.run(`
     CREATE TABLE IF NOT EXISTS enquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -147,55 +155,24 @@ app.post("/api/drivers", (req, res) => {
   `, [name, mobile, password, commission || 85], () => res.json({ success: true }));
 });
 
-// ================= ADMINS =================
+// ================= ADMIN LOGIN =================
 app.post("/api/admin/login", (req, res) => {
   const mobile = req.body.username?.trim();
   const password = req.body.password?.trim();
   if (!mobile || !password) return res.status(400).json({ message: "Missing fields" });
 
   db.get("SELECT * FROM admins WHERE mobile=? AND password=?", [mobile, password], (err, row) => {
+    if (err) return res.status(500).json({ message: err.message });
     if (!row) return res.status(401).json({ message: "Invalid login" });
-    req.session.admin = row;
-    res.json({ success: true });
-  });
-});
 
-// ================= DRIVER LOGIN =================
-app.post("/login-driver", (req, res) => {
-  const { mobile, password } = req.body;
-  db.get("SELECT * FROM drivers WHERE mobile=? AND password=?", [mobile, password], (err, row) => {
-    if (!row) return res.send("Invalid login");
-    req.session.driver = row;
-    res.redirect("/driver.html");
+    req.session.admin = { id: row.id, name: row.name, mobile: row.mobile };
+    res.json({ success: true });
   });
 });
 
 // ================= LOGOUT =================
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
-});
-
-// ================= FARE CALCULATION =================
-const rates = { airport: { "MPV 6 Seater": 70, "Luxury Sedan": 80 } };
-function calculateFare(vehicle, km, pickupTime) {
-  if (!rates.airport[vehicle]) return null;
-  let total = rates.airport[vehicle];
-  if (km > 20) total += (km - 20);
-  if (pickupTime && parseInt(pickupTime.split(":")[0]) < 6) total += 10;
-  return Math.round(total);
-}
-
-app.post("/calculate-fare", async (req, res) => {
-  try {
-    const { vehicleType, pickupTime, origin, destination } = req.body;
-    const response = await axios.get("https://maps.googleapis.com/maps/api/distancematrix/json", {
-      params: { origins: origin, destinations: destination, key: "YOUR_GOOGLE_API_KEY" }
-    });
-    const km = response.data.rows[0].elements[0].distance.value / 1000;
-    res.json({ fare: calculateFare(vehicleType, km, pickupTime), distance: km.toFixed(2) });
-  } catch {
-    res.status(500).json({ error: "Distance calculation failed" });
-  }
 });
 
 // ================= ENQUIRIES =================
@@ -241,8 +218,6 @@ app.post("/submit-enquiry", (req, res) => {
       VALUES (${bookingFields.map(() => '?').join(',')})
     `, bookingFields, function(err2) {
       if (err2) console.error("Booking insert failed:", err2.message);
-
-      // Send success + fullName back to frontend
       res.json({ success: true, fullName: req.body.fullName || "", enquiryId });
     });
   });
