@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Super Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: 'Montserrat','Roboto','Open Sans',Arial,sans-serif;
+    background: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background: black;
+    color: white;
+    text-align: center;
+    font-size: 33px;
+    font-weight: bold;
+    padding: 16px;
+}
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 12px black;
+}
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.tabs button {
+    flex: 1;
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+}
+.tabs button.active { background: #333; color: orange; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+table th, table td {
+    border: 1px solid rgb(253, 198, 97);
+    padding: 8px;
+    text-align: left;
+}
+table th { background: black; color: white; }
+#passwordPrompt {
+    text-align: center;
+    margin-top: 50px;
+}
+#passwordPrompt input { padding: 8px; border-radius: 6px; border: 2px solid orange; margin-right: 10px; }
+</style>
+</head>
+<body>
+
+<header>Super Admin Panel</header>
+
+<div id="passwordPrompt">
+    <label style="color:orange; font-size:18px;">Enter Admin Password:</label>
+    <input type="password" id="adminPassword" placeholder="Password">
+    <button onclick="checkPassword()">Enter</button>
+    <div id="passMessage" style="color:red; margin-top:10px;"></div>
+</div>
+
+<div class="container" id="adminPanel" style="display:none;">
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="enquiriesTab">Enquiries</button>
+        <button class="tab-btn" data-tab="driversTab">Drivers</button>
+    </div>
+
+    <!-- Enquiries Table -->
+    <div id="enquiriesTab" class="tab-content active">
+        <table id="enquiriesTable">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Pickup Date</th>
+                    <th>Pickup Location</th>
+                    <th>Drop-off</th>
+                    <th>Vehicle</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Drivers Table -->
+    <div id="driversTab" class="tab-content">
+        <table id="driversTable">
+            <thead>
+                <tr>
+                    <th>Driver Name</th>
+                    <th>Phone</th>
+                    <th>Vehicle Assigned</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+// 🔒 Admin password
+const ADMIN_PASSWORD = "123";
+
+function checkPassword(){
+    const input = document.getElementById("adminPassword").value;
+    if(input === ADMIN_PASSWORD){
+        document.getElementById("passwordPrompt").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        fetchEnquiries();
+        fetchDrivers();
+    } else {
+        document.getElementById("passMessage").innerText = "Incorrect password!";
+    }
+}
+
+// Tabs switching
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tab=>tab.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+
+// Example: Fetch Enquiry Data
+function fetchEnquiries(){
+    // Replace URL with your API endpoint
+    fetch('/api/enquiries')
+        .then(res => res.json())
+        .then(data=>{
+            const tbody = document.querySelector('#enquiriesTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(e=>{
+                const row = `<tr>
+                    <td>${e.fullName}</td>
+                    <td>${e.email}</td>
+                    <td>${e.mobile}</td>
+                    <td>${e.pickupDate}</td>
+                    <td>${e.origin}</td>
+                    <td>${e.destination}</td>
+                    <td>${e.vehicleType}</td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        });
+}
+
+// Example: Fetch Driver Data
+function fetchDrivers(){
+    // Replace URL with your API endpoint
+    fetch('/api/drivers')
+        .then(res => res.json())
+        .then(data=>{
+            const tbody = document.querySelector('#driversTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(d=>{
+                const row = `<tr>
+                    <td>${d.name}</td>
+                    <td>${d.phone}</td>
+                    <td>${d.vehicle}</td>
+                    <td>${d.status}</td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        });
+}
+</script>
+
+</body>
+</html>
