@@ -5,24 +5,107 @@
 <title>LuxRide Enquiry</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-/* Same styling as before */
-body { font-family:'Montserrat','Roboto','Open Sans',Arial,sans-serif; font-size:16px; background:#000; color:#fff; margin:0; padding:0; }
-header { background:black; color:orange; padding:16px; text-align:center; font-size:33px; font-weight:bold; }
-.container { max-width:750px; margin:20px auto; background:#111; padding:20px; border-radius:10px; box-shadow:0 0 12px orange; color:white; }
-.grid { display:grid; grid-template-columns:1fr 1fr; column-gap:20px; row-gap:16px; }
-.full-width { grid-column:1 / -1; }
-label { font-weight:bold; display:block; margin-bottom:4px; font-size:13px; }
-input, select, textarea { width:100%; padding:8px; border-radius:6px; border:2px solid orange; font-size:13px; background:#fff; color:#000; box-sizing:border-box; }
-textarea { resize:vertical; min-height:50px; }
-.row { display:flex; gap:10px; }
-.row div { flex:1; }
-.row input[type="number"] { width:100%; }
-.consent { display:flex; align-items:center; margin-top:12px; font-size:13px; }
-.consent input { width:auto; margin-right:10px; }
-button { width:100%; padding:10px; background:orange; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer; margin-top:12px; font-size:14px; }
-button:hover { background:#333; }
-#thankYou { margin-top:16px; font-weight:bold; color:orange; font-size:14px; }
-@media (max-width:768px) { .grid { grid-template-columns:1fr; } .row { flex-direction:column; } }
+body {
+    font-family: 'Montserrat', 'Roboto', 'Open Sans', Arial, sans-serif;
+    font-size: 16px;
+    background: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+header { 
+    background: black;
+    color: orange; 
+    padding: 16px; 
+    text-align: center; 
+    font-size: 33px; 
+    font-weight: bold; 
+}
+.container { 
+    max-width: 750px; 
+    margin: 20px auto; 
+    background: #111; 
+    padding: 20px; 
+    border-radius: 10px; 
+    box-shadow: 0 0 12px orange; 
+    color: white; 
+}
+.grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    column-gap: 20px;  
+    row-gap: 16px;     
+}
+.full-width { 
+    grid-column: 1 / -1; 
+}
+label { 
+    font-weight: bold; 
+    display: block; 
+    margin-bottom: 4px; 
+    font-size: 13px;
+}
+input, select, textarea { 
+    width: 100%; 
+    padding: 8px; 
+    border-radius: 6px; 
+    border: 2px solid orange; 
+    font-size: 13px; 
+    background: #fff; 
+    color: #000; 
+    box-sizing: border-box;
+}
+textarea { 
+    resize: vertical; 
+    min-height: 50px; 
+}
+.row {
+    display: flex;
+    gap: 20px;
+}
+.row div { 
+    flex: 1; 
+}
+.row input[type="number"] { 
+    width: 100%; 
+}
+.consent { 
+    display: flex; 
+    align-items: center; 
+    margin-top: 12px; 
+    font-size: 13px;
+}
+.consent input { 
+    width: auto; 
+    margin-right: 10px; 
+}
+button { 
+    width: 100%; 
+    padding: 10px; 
+    background: orange; 
+    color: white; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    margin-top: 12px; 
+    font-size: 14px; 
+}
+button:hover { 
+    background: #333; 
+}
+#thankYou { 
+    margin-top: 16px; 
+    font-weight: bold; 
+    color: orange; 
+    font-size: 14px;
+}
+@media (max-width:768px) { 
+    .grid { 
+        grid-template-columns: 1fr; 
+    } 
+    .row { flex-direction: column; }
+}
 </style>
 </head>
 <body>
@@ -30,7 +113,7 @@ button:hover { background:#333; }
 <header>Customer Enquiry</header>
 <div class="container">
 
-<form id="enquiryForm" autocomplete="off">
+<form id="enquiryForm">
 <div class="grid">
 
     <div><label>Full Name *</label><input type="text" name="fullName" required></div>
@@ -45,31 +128,44 @@ button:hover { background:#333; }
     <div><label>Pickup Location *</label><input type="text" id="origin" name="origin" required></div>
     <div><label>Drop-off Location *</label><input type="text" id="destination" name="destination" required></div>
 
-    <!-- Hidden fields for coordinates -->
-    <input type="hidden" name="originLat" id="originLat">
-    <input type="hidden" name="originLng" id="originLng">
-    <input type="hidden" name="destinationLat" id="destinationLat">
-    <input type="hidden" name="destinationLng" id="destinationLng">
-
-    <div>
+    <div class="full-width">
         <label>Number of Passengers *</label>
         <div class="row">
-            <div><label>Adult</label><input type="number" name="adult" min="0" value="0" required></div>
-            <div><label>Child &lt;4</label><input type="number" name="childUnder4" min="0" value="0"></div>
-            <div><label>Child 4-7</label><input type="number" name="child4to7" min="0" value="0"></div>
+            <div>
+                <label>Adult</label>
+                <input type="number" name="adult" min="0" value="0" required>
+            </div>
+            <div>
+                <label>Child &lt;4</label>
+                <input type="number" name="childUnder4" min="0" value="0">
+            </div>
+            <div>
+                <label>Child 4-7</label>
+                <input type="number" name="child4to7" min="0" value="0">
+            </div>
         </div>
     </div>
 
-    <div>
+    <div class="full-width">
         <label>Number of Luggage</label>
         <div class="row">
-            <div><label>Small</label><input type="number" name="smallLuggage" min="0" value="0"></div>
-            <div><label>Medium</label><input type="number" name="mediumLuggage" min="0" value="0"></div>
-            <div><label>Large</label><input type="number" name="largeLuggage" min="0" value="0"></div>
+            <div>
+                <label>Small</label>
+                <input type="number" name="smallLuggage" min="0" value="0">
+            </div>
+            <div>
+                <label>Medium</label>
+                <input type="number" name="mediumLuggage" min="0" value="0">
+            </div>
+            <div>
+                <label>Large</label>
+                <input type="number" name="largeLuggage" min="0" value="0">
+            </div>
         </div>
     </div>
 
-    <div><label>Vehicle Type *</label>
+    <div class="full-width">
+        <label>Vehicle Type *</label>
         <select name="vehicleType" id="vehicleType" required>
             <option value="">Select Vehicle</option>
             <option value="MPV 6 Seater Grand Scenic">MPV 6 Seater Grand Scenic</option>
@@ -81,7 +177,10 @@ button:hover { background:#333; }
         </select>
     </div>
 
-    <div><label>Special Requirements</label><textarea name="specialRequirements"></textarea></div>
+    <div class="full-width">
+        <label>Special Requirements</label>
+        <textarea name="specialRequirements"></textarea>
+    </div>
 
     <div class="full-width consent">
         <input type="checkbox" name="consent" id="consentCheckbox" required>
@@ -98,46 +197,30 @@ button:hover { background:#333; }
 <div id="thankYou"></div>
 </div>
 
-<!-- Google Maps Places API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 <script>
-let originAutocomplete, destinationAutocomplete;
-
 function initAutocomplete() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
+    new google.maps.places.Autocomplete(origin);
+    new google.maps.places.Autocomplete(destination);
 
-    originAutocomplete = new google.maps.places.Autocomplete(origin, { types: ['geocode'] });
-    destinationAutocomplete = new google.maps.places.Autocomplete(destination, { types: ['geocode'] });
-
-    originAutocomplete.addListener('place_changed', () => {
-        const place = originAutocomplete.getPlace();
-        if(place.geometry){
-            document.getElementById("originLat").value = place.geometry.location.lat();
-            document.getElementById("originLng").value = place.geometry.location.lng();
-        }
-    });
-
-    destinationAutocomplete.addListener('place_changed', () => {
-        const place = destinationAutocomplete.getPlace();
-        if(place.geometry){
-            document.getElementById("destinationLat").value = place.geometry.location.lat();
-            document.getElementById("destinationLng").value = place.geometry.location.lng();
-        }
-    });
-
-    // Set defaults only if empty
-    if(!origin.value) origin.value = "Somerset Road, 111 Somerset, Singapore";
-    if(!destination.value) destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
+    origin.value = "Somerset Road, 111 Somerset, Singapore";
+    destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
 
     document.getElementById("vehicleType").value = "MPV 6 Seater Grand Scenic";
     document.getElementById("consentCheckbox").checked = true;
 
     const today = new Date();
-    document.getElementById("pickupDate").value = today.toISOString().split('T')[0];
-    document.getElementById("pickupTime").value = today.toTimeString().slice(0,5);
-}
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    document.getElementById("pickupDate").value = `${yyyy}-${mm}-${dd}`;
 
+    const hh = String(today.getHours()).padStart(2,'0');
+    const min = String(today.getMinutes()).padStart(2,'0');
+    document.getElementById("pickupTime").value = `${hh}:${min}`;
+}
 window.onload = initAutocomplete;
 
 document.getElementById("enquiryForm").addEventListener("submit", function(e){
