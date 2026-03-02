@@ -9,7 +9,7 @@ const axios = require("axios");
 const app = express();
 const PORT = 3000;
 
-// Middleware
+// ================= MIDDLEWARE =================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
@@ -17,13 +17,14 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 
 // ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
 
+// Create tables if not exist
 db.serialize(() => {
-  // Admins table
+  // Admins
   db.run(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +35,7 @@ db.serialize(() => {
     )
   `);
 
-  // Drivers table
+  // Drivers
   db.run(`
     CREATE TABLE IF NOT EXISTS drivers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +46,7 @@ db.serialize(() => {
     )
   `);
 
-  // Bookings table
+  // Bookings
   db.run(`
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +63,7 @@ db.serialize(() => {
     )
   `);
 
-  // Enquiries table
+  // Enquiries
   db.run(`
     CREATE TABLE IF NOT EXISTS enquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -128,7 +129,6 @@ app.post("/api/bookings", (req, res) => {
 
 app.put("/api/bookings/:id", (req, res) => {
   const { status, driver_id, fare } = req.body;
-
   db.run(`
     UPDATE bookings
     SET status = COALESCE(?, status),
@@ -262,7 +262,7 @@ app.post("/submit-enquiry", (req, res) => {
   });
 });
 
-// Fetch enquiries for admin
+// ================= FETCH ENQUIRIES =================
 app.get("/api/admin/enquiries", (req, res) => {
   if (!req.session.admin) return res.status(401).json({ message: "Unauthorized" });
   db.all("SELECT * FROM enquiries ORDER BY id DESC", (err, rows) => {
