@@ -6,7 +6,7 @@
     <style>
         body { 
             font-family: Arial; 
-            background: #000;
+            background: #000; 
             margin: 0; 
             padding: 0; 
         }
@@ -30,8 +30,8 @@
         .grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            column-gap: 24px; /* reduced by ~70% from 80px */
-            row-gap: 9px;     /* reduced by ~70% from 30px */
+            column-gap: 24px;  /* smaller column gap */
+            row-gap: 10px;     /* smaller row gap */
         }
         .full-width { 
             grid-column: 1 / -1; 
@@ -43,29 +43,30 @@
         }
         input, select, textarea { 
             width: 100%; 
-            padding: 7px; /* reduced by 30% from 10px */
+            padding: 6px 10px; /* shorter height */
             border-radius: 6px; 
             border: 2px solid orange; 
-            font-size: 10px; /* reduced proportionally from 14px */
+            font-size: 14px; 
             background: #fff; 
             color: #000; 
         }
         textarea { 
             resize: vertical; 
-            min-height: 56px; /* reduced by ~30% from 80px */
+            min-height: 50px; /* shorter textarea */
         }
         .row { 
             display: flex; 
-            gap: 3.6px; /* reduced by 70% from 12px */
+            gap: 5px; /* smaller gap between number fields */
         }
         .row div { 
             flex: 0; 
             text-align: left; 
         }
         .row input[type="number"] { 
-            width: 49px; /* reduced by ~30% from 70px */
-            margin: 2px auto 0; /* reduced spacing */
+            width: 60px; 
+            margin: 3px auto 0; 
             display: block; 
+            padding: 4px; /* shorter number field */
         }
         .consent { 
             display: flex; 
@@ -77,16 +78,16 @@
             margin-right: 10px; 
         }
         button { 
-            width: 70%; /* reduced by 30% */
-            padding: 9.8px; /* reduced by ~30% from 14px */
+            width: 100%; 
+            padding: 10px; /* shorter button */
             background: orange; 
             color: white; 
             font-weight: bold; 
             border: none; 
             border-radius: 6px; 
             cursor: pointer; 
-            margin-top: 14px; /* reduced by ~30% from 20px */
-            font-size: 11px; /* reduced by ~30% from 16px */
+            margin-top: 15px; 
+            font-size: 16px; 
         }
         button:hover { 
             background: #333; 
@@ -140,7 +141,7 @@
     </div>
 
     <div class="full-width row">
-        <div style="flex:1; min-width:175px; margin-right:6px;"> <!-- reduced widths & margin -->
+        <div style="flex:1; min-width:175px; margin-right:6px;">
         <label>Vehicle Type *</label>
         <select name="vehicleType" id="vehicleType" required>
             <option value="">Select Vehicle</option>
@@ -157,12 +158,13 @@
         <textarea name="specialRequirements"></textarea>
     </div>
 </div>
-    <div class="full-width consent">
-        <input type="checkbox" name="consent" id="consentCheckbox" required>
-        I agree to be contacted by LuxRide regarding my enquiry*
-    </div>
 
-    <div class="full-width"><button type="submit">Submit Enquiry</button></div>
+<div class="full-width consent">
+    <input type="checkbox" name="consent" id="consentCheckbox" required>
+    I agree to be contacted by LuxRide regarding my enquiry*
+</div>
+
+<div class="full-width"><button type="submit">Submit Enquiry</button></div>
 </div>
 </form>
 
