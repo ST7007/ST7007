@@ -4,9 +4,8 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const session = require("express-session");
 const axios = require("axios");
-
 const app = express();
-
+const bcrypt = require("bcrypt");
 // ================= MIDDLEWARE =================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -155,42 +154,51 @@ app.post("/api/drivers", (req, res) => {
   `, [name, mobile, password, commission || 85], () => res.json({ success: true }));
 });
 
-// ================= CREATE ADMIN =================
-app.post("/create-admin", (req, res) => {
+// ================= CREATE ADMIN WITH HASHED PASSWORD =================
+app.post("/create-admin", async (req, res) => {
   const { name, mobile, password } = req.body;
 
   if (!name || !mobile || !password) {
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
-  const createdAt = new Date().toLocaleString();
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 salt rounds
+    const createdAt = new Date().toLocaleString();
 
-  db.run(
-    "INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)",
-    [name, mobile, password, createdAt],
-    function(err) {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ success: false, message: "Mobile may already exist" });
+    db.run(
+      "INSERT INTO admins (name, mobile, password, created_at) VALUES (?, ?, ?, ?)",
+      [name, mobile, hashedPassword, createdAt],
+      function(err) {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).json({ success: false, message: "Mobile may already exist" });
+        }
+        res.json({ success: true, adminId: this.lastID, message: "Admin created successfully" });
       }
-      res.json({ success: true, adminId: this.lastID, message: "Admin created successfully" });
-    }
-  );
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 
 // ================= ADMIN LOGIN =================
-app.post("/api/admin/login", (req, res) => {
+app.post("/api/admin/login", async (req, res) => {
   const mobile = req.body.username?.trim();
   const password = req.body.password?.trim();
   if (!mobile || !password) return res.status(400).json({ message: "Missing fields" });
 
-  db.get("SELECT * FROM admins WHERE mobile=? AND password=?", [mobile, password], (err, row) => {
+  db.get("SELECT * FROM admins WHERE mobile=?", [mobile], async (err, row) => {
     if (err) return res.status(500).json({ message: err.message });
     if (!row) return res.status(401).json({ message: "Invalid login" });
 
-    req.session.admin = { id: row.id, name: row.name, mobile: row.mobile };
-    res.json({ success: true });
+    const match = await bcrypt.compare(password, row.password);
+    if (!match) return res.status(401).json({ message: "Invalid login" });
+
+    req.session.admin = row;
+    res.json({ success: true, message: "Login successful" });
   });
 });
 
