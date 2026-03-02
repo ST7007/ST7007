@@ -4,23 +4,100 @@
     <title>LuxRide Enquiry</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; background:#f4f4f4; margin:0; padding:0; }
-        header { background: orange; color:white; padding:20px; text-align:center; font-size:24px; font-weight:bold; }
-        .container { max-width:900px; margin:30px auto; background:white; padding:30px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
-        .grid { display:grid; grid-template-columns:1fr 1fr; column-gap:80px; row-gap:30px; }
-        .full-width { grid-column:1 / -1; }
-        label { font-weight:bold; display:block; margin-bottom:5px; }
-        input, select, textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:14px; }
-        textarea { resize: vertical; min-height:80px; }
-        .row { display:flex; gap:12px; }
-        .row div { flex:0; text-align:left; }
-        .row input[type="number"] { width:70px; margin:8px auto 0; display:block; }
-        .consent { display:flex; align-items:center; margin-top:10px; }
-        .consent input { width:auto; margin-right:10px; }
-        button { width:100%; padding:14px; background:orange; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer; margin-top:20px; font-size:16px; }
-        button:hover { background:#333; }
-        #thankYou { margin-top:20px; font-weight:bold; color:green; }
-        @media (max-width:768px) { .grid { grid-template-columns:1fr; } }
+        body { 
+            font-family: Arial; 
+            background: #000;  /* black background */
+            margin: 0; 
+            padding: 0; 
+        }
+        header { 
+            background: orange; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 24px; 
+            font-weight: bold; 
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 30px auto; 
+            background: #fff;  /* white form box */
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            column-gap: 80px; 
+            row-gap: 30px; 
+        }
+        .full-width { 
+            grid-column: 1 / -1; 
+        }
+        label { 
+            font-weight: bold; 
+            display: block; 
+            margin-bottom: 5px; 
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 14px; 
+        }
+        textarea { 
+            resize: vertical; 
+            min-height: 80px; 
+        }
+        .row { 
+            display: flex; 
+            gap: 12px; 
+        }
+        .row div { 
+            flex: 0; 
+            text-align: left; 
+        }
+        .row input[type="number"] { 
+            width: 70px; 
+            margin: 8px auto 0; 
+            display: block; 
+        }
+        .consent { 
+            display: flex; 
+            align-items: center; 
+            margin-top: 10px; 
+        }
+        .consent input { 
+            width: auto; 
+            margin-right: 10px; 
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: orange; 
+            color: white; 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            font-size: 16px; 
+        }
+        button:hover { 
+            background: #333; 
+        }
+        #thankYou { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            color: green; 
+        }
+        @media (max-width:768px) { 
+            .grid { 
+                grid-template-columns: 1fr; 
+            } 
+        }
     </style>
 </head>
 <body>
@@ -97,31 +174,25 @@ function initAutocomplete() {
     new google.maps.places.Autocomplete(origin);
     new google.maps.places.Autocomplete(destination);
 
-    // Set default pickup/drop-off values
     origin.value = "Somerset Road, 111 Somerset, Singapore";
     destination.value = "Airport Boulevard, Changi Airport (SIN), Singapore";
 
-    // Set default vehicle type
     document.getElementById("vehicleType").value = "MPV 6 Seater";
 
-    // Check the consent checkbox
     document.getElementById("consentCheckbox").checked = true;
 
-    // Auto current date
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth()+1).padStart(2,'0');
     const dd = String(today.getDate()).padStart(2,'0');
     document.getElementById("pickupDate").value = `${yyyy}-${mm}-${dd}`;
 
-    // Auto current time
     const hh = String(today.getHours()).padStart(2,'0');
     const min = String(today.getMinutes()).padStart(2,'0');
     document.getElementById("pickupTime").value = `${hh}:${min}`;
 }
 window.onload = initAutocomplete;
 
-// AJAX form submit
 document.getElementById("enquiryForm").addEventListener("submit", function(e){
     e.preventDefault();
     const formData = new FormData(this);
@@ -137,7 +208,6 @@ document.getElementById("enquiryForm").addEventListener("submit", function(e){
         if(res.success){
             document.getElementById("thankYou").innerHTML = `Thank you <strong>${res.fullName}</strong>, we will contact you soon.`;
             this.reset();
-            // Reset defaults after reset
             initAutocomplete();
         } else {
             document.getElementById("thankYou").innerText = res.message;
