@@ -208,7 +208,13 @@ app.get("/api/dashboard", (req, res) => {
     });
   });
 });
+app.post("/submit-enquiry", (req, res) => {
+  console.log(req.body); // see if data comes
+
+  res.send("Enquiry received");
+});
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => console.log(`🚗 LuxRide running at http://localhost:${PORT}`));
