@@ -29,7 +29,7 @@ app.use((req, res) => {
 });
 
 // ================= DATABASE =================
-const db = new sqlite3.Database("./database.db");
+const db = new sqlite3.Database("./ST7007-database.db");
 
 db.serialize(() => {
   // Admins table
