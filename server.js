@@ -23,11 +23,6 @@ app.use(session({
 }));
 app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 
-// ======== 404 fallback ========
-app.use((req, res) => {
-  res.status(404).send("Page not found");
-});
-
 // ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
 
@@ -141,12 +136,10 @@ app.post("/register-driver", upload.fields([
       carRegDate, coeExpiredDate, insuranceStartDate, insuranceExpiredDate
     } = req.body;
 
-    // Required fields validation
     if (!fullName || !email || !mobile || !password) {
       return res.status(400).json({ success: false, message: "Please fill all required fields" });
     }
 
-    // Check required files
     const requiredFiles = ['icFront','icBack','drivingLicense','phvLicense','carLogcard','carInsurance'];
     for(let f of requiredFiles){
       if(!req.files?.[f]){
@@ -154,7 +147,6 @@ app.post("/register-driver", upload.fields([
       }
     }
 
-    // Assign files
     const icFront = req.files.icFront[0].filename;
     const icBack = req.files.icBack[0].filename;
     const drivingLicense = req.files.drivingLicense[0].filename;
@@ -267,15 +259,48 @@ app.get("/api/dashboard", (req, res) => {
   });
 });
 
-// ================= REDIRECTS =================
-// Redirect old enquiry.html URL to new customer-enquiry.html
-app.get("/enquiry.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
+// ================= API FOR SA PANEL =================
+
+// Enquiries
+app.get("/api/enquiries", (req, res) => {
+  db.all("SELECT * FROM enquiries", [], (err, rows) => {
+    if(err) return res.status(500).json({ success: false, message: err.message });
+    res.json({ success: true, data: rows });
+  });
 });
 
-// Optional: redirect root URL to customer enquiry page
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
+// Drivers
+app.get("/api/drivers", (req, res) => {
+  db.all("SELECT * FROM drivers", [], (err, rows) => {
+    if(err) return res.status(500).json({ success: false, message: err.message });
+    res.json({ success: true, data: rows });
+  });
+});
+
+// Customers (from bookings table)
+app.get("/api/customers", (req, res) => {
+  db.all("SELECT * FROM bookings", [], (err, rows) => {
+    if(err) return res.status(500).json({ success: false, message: err.message });
+    const customers = rows.map(r => ({
+      fullName: r.fullName,
+      email: r.email,
+      mobile: r.mobile,
+      origin: r.origin,
+      destination: r.destination,
+      vehicleType: r.vehicleType,
+      status: r.status,
+      created_at: r.created_at
+    }));
+    res.json({ success: true, data: customers });
+  });
+});
+
+// Bookings
+app.get("/api/bookings", (req, res) => {
+  db.all("SELECT * FROM bookings", [], (err, rows) => {
+    if(err) return res.status(500).json({ success: false, message: err.message });
+    res.json({ success: true, data: rows });
+  });
 });
 
 // ================= START SERVER =================
