@@ -5,192 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LuxRide - Airport Transfers Singapore</title>
 
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+
+<!-- CSS -->
+<link rel="stylesheet" href="/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* Global Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Body */
-body {
-    background: #fff;
-    color: #111;
-    font-size: 16px; /* Base desktop font */
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+body { background: #fff; color: #111; font-size: 16px; }
 
 /* Header */
-header {
-    background: #000;
-    color: #fff;
-    padding: 20px 10%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-header h1 {
-    color: orange;
-}
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 20px;
-    font-weight: 500;
-}
-nav a:hover {
-    color: orange;
-}
+header { background: #000; color: #fff; padding: 20px 10%; display: flex; justify-content: space-between; align-items: center; }
+header h1 { color: orange; }
+nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
+nav a:hover { color: orange; }
 
 /* Hero Section */
-.hero {
-    height: 85vh;
-    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
-                url("images/x9.jpg") center/cover no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    padding: 0 20px;
-}
-.hero h2 {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-.hero p {
-    font-size: 20px;
-    margin-bottom: 30px;
-}
-.btn {
-    padding: 14px 28px;
-    background: orange;
-    color: black;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 5px;
-    margin: 10px;
-    display: inline-block;
-}
-.btn:hover {
-    background: #ff9800;
-}
+.hero { height: 85vh; background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url("images/x9.jpg") center/cover no-repeat; display: flex; justify-content: center; align-items: center; text-align: center; color: white; padding: 0 20px; }
+.hero h2 { font-size: 48px; margin-bottom: 20px; }
+.hero p { font-size: 20px; margin-bottom: 30px; }
+.btn { padding: 14px 28px; background: orange; color: black; text-decoration: none; font-weight: 600; border-radius: 5px; margin: 10px; display: inline-block; }
+.btn:hover { background: #ff9800; }
 
 /* Section */
-.section {
-    padding: 70px 10%;
-    text-align: center;
-}
-.section h3 {
-    font-size: 32px;
-    margin-bottom: 40px;
-}
+.section { padding: 70px 10%; text-align: center; }
+.section h3 { font-size: 32px; margin-bottom: 40px; }
 
 /* Cars */
-.cars {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
-}
-.car-card {
-    width: 320px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    transition: 0.3s;
-    background: #fff;
-}
-.car-card:hover {
-    transform: translateY(-8px);
-}
-.car-card img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-}
-.car-card h4 {
-    padding: 15px;
-}
+.cars { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
+.car-card { width: 320px; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.3s; background: #fff; }
+.car-card:hover { transform: translateY(-8px); }
+.car-card img { width: 100%; height: 220px; object-fit: cover; }
+.car-card h4 { padding: 15px; }
 
 /* Footer */
-footer {
-    background: black;
-    color: white;
-    text-align: center;
-    padding: 25px;
-}
+footer { background: black; color: white; text-align: center; padding: 25px; }
 
-/* Responsive Text & Containers */
-
-/* Tablet view */
-@media (max-width: 768px) {
-    body {
-        font-size: 17px;
-    }
-    .hero h2 {
-        font-size: 38px;
-    }
-    .hero p {
-        font-size: 18px;
-    }
-    .section h3 {
-        font-size: 28px;
-    }
-    .car-card {
-        width: 45%;
-    }
-}
-
-/* Mobile view */
-@media (max-width: 480px) {
-    body {
-        font-size: 18px;
-    }
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px 5%;
-    }
-    nav {
-        margin-top: 10px;
-    }
-    nav a {
-        display: block;
-        margin: 5px 0;
-    }
-    .hero {
-        height: 60vh;
-        padding: 0 10px;
-    }
-    .hero h2 {
-        font-size: 28px;
-    }
-    .hero p {
-        font-size: 16px;
-    }
-    .section {
-        padding: 50px 5%;
-    }
-    .section h3 {
-        font-size: 24px;
-    }
-    .cars {
-        gap: 15px;
-        flex-direction: column;
-        align-items: center;
-    }
-    .car-card {
-        width: 90%;
-    }
-    .btn {
-        padding: 12px 24px;
-        font-size: 16px;
-    }
-}
+/* Responsive */
+@media (max-width: 768px) { body { font-size: 17px; } .hero h2 { font-size: 38px; } .hero p { font-size: 18px; } .section h3 { font-size: 28px; } .car-card { width: 45%; } }
+@media (max-width: 480px) { body { font-size: 18px; } header { flex-direction: column; align-items: flex-start; padding: 15px 5%; } nav { margin-top: 10px; } nav a { display: block; margin: 5px 0; } .hero { height: 60vh; padding: 0 10px; } .hero h2 { font-size: 28px; } .hero p { font-size: 16px; } .section { padding: 50px 5%; } .section h3 { font-size: 24px; } .cars { gap: 15px; flex-direction: column; align-items: center; } .car-card { width: 90%; } .btn { padding: 12px 24px; font-size: 16px; } }
 </style>
 
 </head>
@@ -200,8 +57,7 @@ footer {
     <h1>LuxRide</h1>
     <nav>
         <a href="https://home.st7007.com/" target="_blank">Home</a>
-        <a href="https://customer-enquiry.ST7007.com
-        " target="_blank">Enquiry</a>
+        <a href="https://customer-enquiry.ST7007.com" target="_blank">Enquiry</a>
         <a href="https://api.whatsapp.com/send?phone=6582227007&text=LuxRide%20enquiry" target="_blank">WhatsApp</a>
     </nav>
 </header>
@@ -210,8 +66,7 @@ footer {
     <div>
         <h2>Premium Airport Transfers</h2>
         <p>Changi Airport • Hotels • CBD • No Surge Pricing</p>
-        <a href="https://customer-enquiry.ST7007.com
-        " target="_blank" class="btn">Make Enquiry</a>
+        <a href="https://customer-enquiry.ST7007.com" target="_blank" class="btn">Make Enquiry</a>
         <a href="https://api.whatsapp.com/send?phone=6582227007&text=LuxRide%20enquiry" target="_blank" class="btn">WhatsApp Now</a>
     </div>
 </section>
@@ -220,28 +75,22 @@ footer {
     <h3>Our Vehicles</h3>
     <div class="cars">
 
-        <!-- BLACK TOYOTA ALPHARD -->
         <div class="car-card">
-            <a href="https://customer-enquiry.ST7007.com
-            "target="_blank">
+            <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/alphard.jpg">
             </a>
             <h4>MPV 6 Seater (Toyota Alphard / Vellfire)</h4>
         </div>
 
-        <!-- BLACK MERCEDES E CLASS -->
         <div class="car-card">
-            <a href="https://customer-enquiry.ST7007.com
-            "target="_blank">
+            <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/e_class.jpg">
             </a>
             <h4>Luxury Sedan (Mercedes E / S Class)</h4>
         </div>
 
-        <!-- GREY RENAULT GRAND SCENIC -->
         <div class="car-card">
-            <a href="https://customer-enquiry.ST7007.com
-            "target="_blank">
+            <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/grand_scenic.jpg">
             </a>
             <h4>MPV 6 Seater (Renault Grand Scenic)</h4>
@@ -264,6 +113,14 @@ footer {
 <footer>
     © 2026 LuxRide Singapore | Airport Transfers
 </footer>
+
+<!-- ===== REGISTER SERVICE WORKER ===== -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("Service Worker Registered"));
+}
+</script>
 
 </body>
 </html>

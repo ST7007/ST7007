@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install LuxRide</title>
+<style>
+  body { display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; background:#000; color:#fff; flex-direction:column; }
+  button { padding:20px; font-size:18px; background:#FF6600; color:#fff; border:none; border-radius:10px; cursor:pointer; }
+</style>
+</head>
+<body>
+<h1>Install LuxRide App</h1>
+<button id="installBtn">Add to Home Screen</button>
+
+<script>
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if(outcome === 'accepted'){
+      console.log('User accepted the install prompt');
+    }
+    deferredPrompt = null;
+  }
+});
+</script>
+</body>
+</html>
