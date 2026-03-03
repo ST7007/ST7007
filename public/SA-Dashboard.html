@@ -2,73 +2,239 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Super Admin Dashboard</title>
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: 'Montserrat','Roboto','Open Sans',Arial,sans-serif;
+    background: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background: black;
+    color: orange;
+    text-align: center;
+    font-size: 33px;
+    font-weight: bold;
+    padding: 16px;
+}
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 12px orange;
+}
+.dashboard-cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.dashboard-cards .card {
+    flex: 1;
+    min-width: 200px;
+    background: #222;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 0 8px orange;
+}
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.tabs button {
+    flex: 1;
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+}
+.tabs button.active {
+    background: #333;
+    color: orange;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+table th, table td {
+    border: 1px solid orange;
+    padding: 8px;
+    text-align: left;
+}
+table th {
+    background: black;
+    color: white;
+}
+.empty-message {
+    color: orange;
+    text-align: center;
+    margin-top: 10px;
+}
+</style>
 </head>
+
 <body>
 
-<header>Super Admin Dashboard</header>
+<header>🚗 Super Admin Dashboard</header>
+
 <div class="container">
 
-<h2>Enquiries</h2>
-<table id="enquiriesTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>Full Name</th>
-<th>Company</th>
-<th>Email</th>
-<th>Mobile</th>
-<th>Pickup Date</th>
-<th>Pickup Time</th>
-<th>Origin</th>
-<th>Destination</th>
-<th>Passengers</th>
-<th>Vehicle</th>
-<th>Special Requirements</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+    <!-- Dashboard Cards -->
+    <div class="dashboard-cards">
+        <div class="card">Total Bookings: <span id="totalBookings">0</span></div>
+        <div class="card">Total Revenue: $<span id="revenue">0</span></div>
+        <div class="card">Total Enquiries: <span id="totalEnquiries">0</span></div>
+        <div class="card">Total Drivers: <span id="totalDrivers">0</span></div>
+    </div>
 
-<script>
-async function loadEnquiries(){
-    const tbody = document.querySelector("#enquiriesTable tbody");
-    tbody.innerHTML = "<tr><td colspan='12'>Loading...</td></tr>";
-    try {
-        const res = await fetch("/api/enquiries");
-        const result = await res.json();
-        if(result.success){
-            tbody.innerHTML = "";
-            result.enquiries.forEach(e => {
-                const passengers = `Adult:${e.adult} Child<4:${e.childUnder4} Child4-7:${e.child4to7}`;
-                tbody.innerHTML += `<tr>
-                    <td>${e.id}</td>
-                    <td>${e.fullName}</td>
-                    <td>${e.companyName || ""}</td>
-                    <td>${e.email}</td>
-                    <td>${e.mobile}</td>
-                    <td>${e.pickupDate}</td>
-                    <td>${e.pickupTime}</td>
-                    <td>${e.origin}</td>
-                    <td>${e.destination}</td>
-                    <td>${passengers}</td>
-                    <td>${e.vehicleType}</td>
-                    <td>${e.specialRequirements || ""}</td>
-                </tr>`;
-            });
-        } else {
-            tbody.innerHTML = "<tr><td colspan='12'>Error loading enquiries.</td></tr>";
-        }
-    } catch(err){
-        tbody.innerHTML = "<tr><td colspan='12'>Error loading enquiries.</td></tr>";
-        console.error(err);
-    }
-}
-window.onload = loadEnquiries;
-</script>
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="enquiriesTab">Enquiries</button>
+        <button class="tab-btn" data-tab="driversTab">Drivers</button>
+    </div>
+
+    <!-- Enquiries Table -->
+    <div id="enquiriesTab" class="tab-content active">
+        <table id="enquiriesTable">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Pickup Date</th>
+                    <th>Pickup Location</th>
+                    <th>Drop-off</th>
+                    <th>Vehicle</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="noEnquiries" class="empty-message"></div>
+    </div>
+
+    <!-- Drivers Table -->
+    <div id="driversTab" class="tab-content">
+        <table id="driversTable">
+            <thead>
+                <tr>
+                    <th>Driver Name</th>
+                    <th>Mobile</th>
+                    <th>Commission %</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="noDrivers" class="empty-message"></div>
+    </div>
 
 </div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tab=>tab.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+
+// Fetch Dashboard metrics
+function fetchDashboard(){
+    fetch('/api/dashboard')
+    .then(res=>res.json())
+    .then(data=>{
+        document.getElementById('totalBookings').innerText = data.totalBookings || 0;
+        document.getElementById('revenue').innerText = data.revenue || 0;
+        document.getElementById('totalEnquiries').innerText = data.totalEnquiries || 0;
+        document.getElementById('totalDrivers').innerText = data.totalDrivers || 0;
+    });
+}
+
+// Fetch Enquiries
+function fetchEnquiries(){
+    fetch('/api/admin/enquiries')
+    .then(res => res.json())
+    .then(data=>{
+        const tbody = document.querySelector('#enquiriesTable tbody');
+        tbody.innerHTML = '';
+        if(!data.success || data.enquiries.length === 0){
+            document.getElementById('noEnquiries').innerText = "No enquiries available.";
+            return;
+        }
+        document.getElementById('noEnquiries').innerText = "";
+        data.enquiries.forEach(e=>{
+            const row = `<tr>
+                <td>${e.fullName || ''}</td>
+                <td>${e.email || ''}</td>
+                <td>${e.mobile || ''}</td>
+                <td>${e.pickupDate || ''}</td>
+                <td>${e.origin || ''}</td>
+                <td>${e.destination || ''}</td>
+                <td>${e.vehicleType || ''}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    })
+    .catch(()=>{
+        document.getElementById('noEnquiries').innerText = "Unable to load enquiries.";
+    });
+}
+
+// Fetch Drivers
+function fetchDrivers(){
+    fetch('/api/drivers')
+    .then(res => res.json())
+    .then(data=>{
+        const tbody = document.querySelector('#driversTable tbody');
+        tbody.innerHTML = '';
+        if(data.length === 0){
+            document.getElementById('noDrivers').innerText = "No drivers available.";
+            return;
+        }
+        document.getElementById('noDrivers').innerText = "";
+        data.forEach(d=>{
+            const row = `<tr>
+                <td>${d.name || ''}</td>
+                <td>${d.mobile || ''}</td>
+                <td>${d.commission || ''}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    })
+    .catch(()=>{
+        document.getElementById('noDrivers').innerText = "Unable to load drivers.";
+    });
+}
+
+// Auto load all
+window.onload = function(){
+    fetchDashboard();
+    fetchEnquiries();
+    fetchDrivers();
+};
+</script>
+
 </body>
 </html>
