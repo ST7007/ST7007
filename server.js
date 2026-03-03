@@ -23,16 +23,10 @@ app.use(session({
 }));
 app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 
-// ======== 404 fallback ========
-app.use((req, res) => {
-  res.status(404).send("Page not found");
-});
-
 // ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
 
 db.serialize(() => {
-  // Admins table
   db.run(`
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +37,6 @@ db.serialize(() => {
     )
   `);
 
-  // Drivers table
   db.run(`
     CREATE TABLE IF NOT EXISTS drivers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +65,6 @@ db.serialize(() => {
     )
   `);
 
-  // Bookings table
   db.run(`
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +81,6 @@ db.serialize(() => {
     )
   `);
 
-  // Enquiries table
   db.run(`
     CREATE TABLE IF NOT EXISTS enquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,12 +132,10 @@ app.post("/register-driver", upload.fields([
       carRegDate, coeExpiredDate, insuranceStartDate, insuranceExpiredDate
     } = req.body;
 
-    // Required fields validation
     if (!fullName || !email || !mobile || !password) {
       return res.status(400).json({ success: false, message: "Please fill all required fields" });
     }
 
-    // Check required files
     const requiredFiles = ['icFront','icBack','drivingLicense','phvLicense','carLogcard','carInsurance'];
     for(let f of requiredFiles){
       if(!req.files?.[f]){
@@ -154,7 +143,6 @@ app.post("/register-driver", upload.fields([
       }
     }
 
-    // Assign files
     const icFront = req.files.icFront[0].filename;
     const icBack = req.files.icBack[0].filename;
     const drivingLicense = req.files.drivingLicense[0].filename;
@@ -267,15 +255,9 @@ app.get("/api/dashboard", (req, res) => {
   });
 });
 
-// ================= REDIRECTS =================
-// Redirect old enquiry.html URL to new customer-enquiry.html
-app.get("/enquiry.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
-});
-
-// Optional: redirect root URL to customer enquiry page
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
+// ================= 404 FALLBACK =================
+app.use((req, res) => {
+  res.status(404).send("Page not found");
 });
 
 // ================= START SERVER =================
