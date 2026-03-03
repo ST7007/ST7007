@@ -236,11 +236,13 @@ document.getElementById("customer-enquiryForm").addEventListener("submit", async
         const result = await res.json();
 
         if(result.success){
-            document.getElementById("thankYou").innerHTML = `
-                Thank you <strong>${result.fullName}</strong>, we have received your enquiry. We will contact you shortly via WhatsApp or phone to confirm availability, pricing, and final arrangements.
-
- If your booking is urgent (within 12 hours), please contact us directly: 📱 https://support.st7007.com`;
- 
+            document.getElementById("thankYou").innerHTML = `<span style="color: white;">
+Thank you <strong>${result.fullName}</strong>, we have received your enquiry. <br><br>
+We will contact you shortly via WhatsApp or phone to confirm availability, pricing, and final arrangements.
+<br><br>
+If your need is urgent (within 12 hours), please contact us directly: <br>
+📱 <a href="https://support.st7007.com" target="_blank" style="color: white; text-decoration: underline;">https://support.st7007.com</a>
+</span>`;
             this.reset();
             initAutocomplete();
         } else {
