@@ -136,22 +136,20 @@ app.post("/register-driver", upload.fields([
       carRegDate, coeExpiredDate, insuranceStartDate, insuranceExpiredDate
     } = req.body;
 
-    // Check required text fields
+    // Required fields validation
     if (!fullName || !email || !mobile || !password) {
       return res.status(400).json({ success: false, message: "Please fill all required fields" });
     }
 
-    // List of required documents
+    // Check required files
     const requiredFiles = ['icFront','icBack','drivingLicense','phvLicense','carLogcard','carInsurance'];
-
-    // Check if all required files are uploaded
     for(let f of requiredFiles){
       if(!req.files?.[f]){
-        return res.status(400).json({ success: false, message: `Please upload all documents. Missing: ${f}` });
+        return res.status(400).json({ success: false, message: `Missing document: ${f}` });
       }
     }
 
-    // Assign uploaded files
+    // Assign files
     const icFront = req.files.icFront[0].filename;
     const icBack = req.files.icBack[0].filename;
     const drivingLicense = req.files.drivingLicense[0].filename;
@@ -162,7 +160,6 @@ app.post("/register-driver", upload.fields([
     const hashedPassword = await bcrypt.hash(password, 10);
     const createdAt = new Date().toLocaleString();
 
-    // Insert into database
     db.run(`
       INSERT INTO drivers
       (fullName,email,mobile,address,password,dob,vehicleModel,plateNumber,
@@ -180,7 +177,7 @@ app.post("/register-driver", upload.fields([
           console.error("DB Error:", err.message);
           return res.status(500).json({ success: false, message: err.message });
         }
-        res.json({ success: true, message: "Registration submitted successfully!", driverId: this.lastID });
+        res.json({ success: true, message: "Driver registration submitted successfully!", driverId: this.lastID });
       }
     );
 
@@ -190,8 +187,64 @@ app.post("/register-driver", upload.fields([
   }
 });
 
-// ================= OTHER ROUTES =================
-// Dashboard
+// ================= CUSTOMER ENQUIRY =================
+app.post("/submit-enquiry", (req, res) => {
+  try {
+    const data = req.body;
+    const {
+      fullName, companyName, email, mobile, pickupDate, pickupTime,
+      origin, destination, adult, childUnder4, child4to7,
+      smallLuggage, mediumLuggage, largeLuggage, vehicleType, specialRequirements
+    } = data;
+
+    if (!fullName || !email || !mobile || !origin || !destination || !vehicleType) {
+      return res.status(400).json({ success: false, message: "Please fill all required fields" });
+    }
+
+    const createdAt = new Date().toLocaleString();
+
+    db.run(`
+      INSERT INTO enquiries
+      (fullName, companyName, email, mobile, pickupDate, pickupTime,
+       origin, destination, adult, childUnder4, child4to7,
+       smallLuggage, mediumLuggage, largeLuggage,
+       vehicleType, specialRequirements, created_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `,
+    [
+      fullName,
+      companyName || "",
+      email,
+      mobile,
+      pickupDate,
+      pickupTime,
+      origin,
+      destination,
+      adult || 0,
+      childUnder4 || 0,
+      child4to7 || 0,
+      smallLuggage || 0,
+      mediumLuggage || 0,
+      largeLuggage || 0,
+      vehicleType,
+      specialRequirements || "",
+      createdAt
+    ],
+    function(err) {
+      if(err){
+        console.error("Enquiry DB Error:", err.message);
+        return res.status(500).json({ success: false, message: "Database error" });
+      }
+      res.json({ success: true, fullName, message: "Enquiry submitted successfully" });
+    });
+
+  } catch(err){
+    console.error("Server Error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ================= DASHBOARD API =================
 app.get("/api/dashboard", (req, res) => {
   db.get("SELECT COUNT(*) as totalBookings FROM bookings", (err1, totalBookings) => {
     db.get("SELECT SUM(fare) as revenue FROM bookings WHERE status='Completed'", (err2, revenue) => {
@@ -208,13 +261,7 @@ app.get("/api/dashboard", (req, res) => {
     });
   });
 });
-app.post("/submit-enquiry", (req, res) => {
-  console.log(req.body); // see if data comes
-
-  res.send("Enquiry received");
-});
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => console.log(`🚗 LuxRide running at http://localhost:${PORT}`));

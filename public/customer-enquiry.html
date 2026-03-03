@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>LuxRide Enquiry</title>
+<title>Customer Enquiry</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -12,9 +12,6 @@ body {
     color: #fff;
     margin: 0;
     padding: 0;
-}.container {
-  width: 100%;
-  max-width: 100%;
 }
 header { 
     background: black;
@@ -116,7 +113,7 @@ button:hover {
 <header>Customer Enquiry</header>
 <div class="container">
 
-<form id="enquiryForm">
+<form id="customer-enquiryForm">
 <div class="grid">
 
     <div><label>Full Name *</label><input type="text" name="fullName" required></div>
@@ -206,55 +203,51 @@ function initAutocomplete() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
     
-    const options = {
-    componentRestrictions: { country: ["SG", "MY"] } // Only Singapore & Malaysia
-};
-    new google.maps.places.Autocomplete(origin);
-    new google.maps.places.Autocomplete(destination);
+    new google.maps.places.Autocomplete(origin, { componentRestrictions: { country: ["SG","MY"] } });
+    new google.maps.places.Autocomplete(destination, { componentRestrictions: { country: ["SG","MY"] } });
 
     origin.value = "10 Marina Boulevard, Singapore";
     destination.value = "Changi Airport Terminal 1 Departure, Singapore";
-
     document.getElementById("vehicleType").value = "MPV 6 Seater Grand Scenic";
     document.getElementById("consentCheckbox").checked = true;
 
     const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth()+1).padStart(2,'0');
-    const dd = String(today.getDate()).padStart(2,'0');
-    document.getElementById("pickupDate").value = `${yyyy}-${mm}-${dd}`;
-
-    const hh = String(today.getHours()).padStart(2,'0');
-    const min = String(today.getMinutes()).padStart(2,'0');
-    document.getElementById("pickupTime").value = `${hh}:${min}`;
+    document.getElementById("pickupDate").value = today.toISOString().slice(0,10);
+    document.getElementById("pickupTime").value = today.toTimeString().slice(0,5);
 }
 window.onload = initAutocomplete;
 
-document.getElementById("enquiryForm").addEventListener("submit", function(e){
+document.getElementById("customer-enquiryForm").addEventListener("submit", async function(e){
     e.preventDefault();
+
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
 
-    fetch("/submit-enquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(res => {
-        if(res.success){
-            document.getElementById("thankYou").innerHTML = `Thank you <strong>${res.fullName}</strong>, We have received your enquiry details and our team is currently reviewing your request. We will contact you shortly via WhatsApp or phone to confirm availability, pricing, and final arrangements.
+    // Convert numeric fields to integers
+    const intFields = ['adult','childUnder4','child4to7','smallLuggage','mediumLuggage','largeLuggage'];
+    intFields.forEach(f => data[f] = parseInt(data[f] || 0,10));
 
-If your booking is urgent (within 12 hours), please contact us directly
-📱 https://support.st7007.com
-            
-            we will contact you soon.`;
+    try {
+        const res = await fetch("/submit-enquiry", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if(result.success){
+            document.getElementById("thankYou").innerHTML = `
+                Thank you <strong>${result.fullName}</strong>, we have received your enquiry.
+                We will contact you shortly.`;
             this.reset();
             initAutocomplete();
         } else {
-            document.getElementById("thankYou").innerText = res.message;
+            document.getElementById("thankYou").innerText = result.message;
         }
-    });
+    } catch(err){
+        console.error("Error submitting enquiry:", err);
+        document.getElementById("thankYou").innerText = "Error submitting enquiry. Please try again.";
+    }
 });
 </script>
 
