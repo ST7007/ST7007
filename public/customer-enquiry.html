@@ -237,8 +237,10 @@ document.getElementById("customer-enquiryForm").addEventListener("submit", async
 
         if(result.success){
             document.getElementById("thankYou").innerHTML = `
-                Thank you <strong>${result.fullName}</strong>, we have received your enquiry.
-                We will contact you shortly.`;
+                Thank you <strong>${result.fullName}</strong>, we have received your enquiry. We will contact you shortly via WhatsApp or phone to confirm availability, pricing, and final arrangements.
+
+ If your booking is urgent (within 12 hours), please contact us directly: 📱 https://support.st7007.com`;
+ 
             this.reset();
             initAutocomplete();
         } else {

@@ -23,6 +23,11 @@ app.use(session({
 }));
 app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 
+// ======== 404 fallback ========
+app.use((req, res) => {
+  res.status(404).send("Page not found");
+});
+
 // ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
 
@@ -260,6 +265,17 @@ app.get("/api/dashboard", (req, res) => {
       });
     });
   });
+});
+
+// ================= REDIRECTS =================
+// Redirect old enquiry.html URL to new customer-enquiry.html
+app.get("/enquiry.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
+});
+
+// Optional: redirect root URL to customer enquiry page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/customer-enquiry.html"));
 });
 
 // ================= START SERVER =================
