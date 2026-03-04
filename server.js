@@ -98,6 +98,8 @@ app.post("/submit-enquiry", (req, res) => {
       createdAt
     ],
     function(err) {
+
+      
       if(err){
         console.error("Enquiry DB Error:", err.message);
         return res.status(500).json({ success: false, message: "Database error" });
