@@ -1,6 +1,7 @@
 {
     "name": "LuxRide",
     "short_name": "LuxRide",
+    "description": "Fast and easy ride booking",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
