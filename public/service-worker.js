@@ -5,16 +5,14 @@ const urlsToCache = [
   "/js/script.js"  // replace with your JS file if different
 ];
 
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
+self.addEventListener('install', event => {
+  console.log('Service Worker installing.');
 });
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+self.addEventListener('activate', event => {
+  console.log('Service Worker activated.');
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(fetch(event.request));
 });
