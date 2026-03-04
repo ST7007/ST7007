@@ -15,7 +15,7 @@
   <!-- Mobile -->
   <link rel="icon" href="/icons/icon-192.png" type="image/png" media="(max-width: 768px)">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  
+
 <!-- CSS -->
 <link rel="stylesheet" href="/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -26,11 +26,31 @@
 body { background: #fff; color: #111; font-size: 16px; }
 
 /* Header */
-header { background: #000; color: #fff; padding: 20px 10%; display: flex; justify-content: space-between; align-items: center; }
+header { 
+  background: #000; 
+  color: #fff; 
+  padding: 20px 10%; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+
+  /* Fixed Header */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+}
 header h1 { 
   color: orange; 
   font-size: 30px;    
 }
+
+/* Push content below fixed header */
+body { 
+  padding-top: 80px;   /* adjust if header height changes */
+}
+
 nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
 nav a:hover { color: orange; }
 
