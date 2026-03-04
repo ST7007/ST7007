@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - Enquiries</title>
+<style>
+body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+th,td { border:1px solid orange; padding:6px; font-size:14px; }
+th { background:orange; color:#000; }
+a { color: #FFA500; text-decoration:none; }
+a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<h1>Customer Enquiries</h1>
+<table>
+<thead>
+<tr>
+<th>Name</th><th>Company</th><th>Email</th><th>Mobile</th><th>Pickup Date</th><th>Pickup Time</th>
+<th>Origin</th><th>Destination</th><th>Passengers</th><th>Luggage</th><th>Vehicle</th><th>Special Req.</th>
+<th>Status</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+<% enquiries.forEach(e => { %>
+<tr>
+<td><%= e.fullName %></td>
+<td><%= e.companyName %></td>
+<td><%= e.email %></td>
+<td><%= e.mobile %></td>
+<td><%= e.pickupDate %></td>
+<td><%= e.pickupTime %></td>
+<td><%= e.origin %></td>
+<td><%= e.destination %></td>
+<td>Adult:<%= e.adult %>, <4:<%= e.childUnder4 %>, 4-7:<%= e.child4to7 %></td>
+<td>S:<%= e.smallLuggage %>, M:<%= e.mediumLuggage %>, L:<%= e.largeLuggage %></td>
+<td><%= e.vehicleType %></td>
+<td><%= e.specialRequirements %></td>
+<td><%= e.status %></td>
+<td>
+<a href="/admin/enquiries/edit/<%= e.id %>">Edit</a> |
+<a href="/admin/enquiries/delete/<%= e.id %>" onclick="return confirm('Delete?')">Delete</a>
+</td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</body>
+</html>

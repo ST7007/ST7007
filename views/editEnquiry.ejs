@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Enquiry</title>
+<style>
+body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+h1 { color: orange; }
+form { max-width:800px; margin-top:20px; }
+label { display:block; margin-top:12px; font-weight:bold; }
+input, select, textarea { width:100%; padding:8px; border-radius:6px; border:2px solid orange; margin-top:4px; background:#fff; color:#000; }
+textarea { min-height:80px; }
+button { margin-top:16px; padding:10px 20px; background:orange; color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer; }
+button:hover { background:#333; color:#fff; }
+</style>
+</head>
+<body>
+
+<h1>Edit Customer Enquiry</h1>
+
+<form action="/admin/enquiries/edit/<%= enquiry.id %>" method="POST">
+    <label>Full Name *</label>
+    <input type="text" name="fullName" value="<%= enquiry.fullName %>" required>
+
+    <label>Company Name</label>
+    <input type="text" name="companyName" value="<%= enquiry.companyName %>">
+
+    <label>Email *</label>
+    <input type="email" name="email" value="<%= enquiry.email %>" required>
+
+    <label>Mobile *</label>
+    <input type="text" name="mobile" value="<%= enquiry.mobile %>" required>
+
+    <label>Pickup Date *</label>
+    <input type="date" name="pickupDate" value="<%= enquiry.pickupDate %>" required>
+
+    <label>Pickup Time</label>
+    <input type="time" name="pickupTime" value="<%= enquiry.pickupTime %>">
+
+    <label>Origin *</label>
+    <input type="text" name="origin" value="<%= enquiry.origin %>" required>
+
+    <label>Destination *</label>
+    <input type="text" name="destination" value="<%= enquiry.destination %>" required>
+
+    <label>Adult</label>
+    <input type="number" name="adult" min="0" value="<%= enquiry.adult %>">
+
+    <label>Child &lt;4</label>
+    <input type="number" name="childUnder4" min="0" value="<%= enquiry.childUnder4 %>">
+
+    <label>Child 4-7</label>
+    <input type="number" name="child4to7" min="0" value="<%= enquiry.child4to7 %>">
+
+    <label>Small Luggage</label>
+    <input type="number" name="smallLuggage" min="0" value="<%= enquiry.smallLuggage %>">
+
+    <label>Medium Luggage</label>
+    <input type="number" name="mediumLuggage" min="0" value="<%= enquiry.mediumLuggage %>">
+
+    <label>Large Luggage</label>
+    <input type="number" name="largeLuggage" min="0" value="<%= enquiry.largeLuggage %>">
+
+    <label>Vehicle Type *</label>
+    <input type="text" name="vehicleType" value="<%= enquiry.vehicleType %>" required>
+
+    <label>Special Requirements</label>
+    <textarea name="specialRequirements"><%= enquiry.specialRequirements %></textarea>
+
+    <label>Status *</label>
+    <select name="status" required>
+        <option value="Pending" <%= enquiry.status==='Pending'?'selected':'' %>>Pending</option>
+        <option value="Assigned" <%= enquiry.status==='Assigned'?'selected':'' %>>Assigned</option>
+        <option value="Completed" <%= enquiry.status==='Completed'?'selected':'' %>>Completed</option>
+    </select>
+
+    <button type="submit">Update Enquiry</button>
+</form>
+
+</body>
+</html>
