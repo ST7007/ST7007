@@ -302,6 +302,31 @@ app.get("/api/bookings", (req, res) => {
     res.json({ success: true, data: rows });
   });
 });
+// UPDATE BOOKING
+app.post("/update-booking/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, phone, tripDate } = req.body;
+
+  db.run(
+      "UPDATE bookings SET name=?, phone=?, tripDate=? WHERE id=?",
+      [name, phone, tripDate, id],
+      function(err) {
+          if (err) return res.send("Update error");
+          res.redirect("/sa-dashboard");
+      }
+  );
+});
+
+
+// DELETE BOOKING
+app.get("/delete-booking/:id", (req, res) => {
+  const { id } = req.params;
+
+  db.run("DELETE FROM bookings WHERE id=?", [id], function(err) {
+      if (err) return res.send("Delete error");
+      res.redirect("/sa-dashboard");
+  });
+});
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 3000;
