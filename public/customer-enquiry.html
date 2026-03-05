@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <title>Customer Enquiry</title>
 
- <!-- MOBILE FRIENDLY META TAG -->
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- MOBILE FRIENDLY META TAG -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
- <!-- Optional: JS in head -->
- <script src="some-script.js"></script>
-</head>
-<body>
+<!-- PWA support -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
 body {
@@ -29,6 +29,12 @@ header {
     font-size: 33px; 
     font-weight: bold; 
 }
+
+/* Hide header in standalone PWA mode */
+@media (display-mode: standalone) {
+    header { display: none; }
+}
+
 .container { 
     max-width: 700px; 
     margin: 20px auto; 
@@ -67,26 +73,11 @@ textarea {
     resize: vertical; 
     min-height: 80px; 
 }
-.row {
-    display: flex;
-    gap: 10px;
-}
-.row div { 
-    flex: 1; 
-}
-.row input[type="number"] { 
-    width: 100%; 
-}
-.consent { 
-    display: flex; 
-    align-items: center; 
-    margin-top: 12px; 
-    font-size: 15px;
-}
-.consent input { 
-    width: auto; 
-    margin-right: 10px; 
-}
+.row { display: flex; gap: 10px; }
+.row div { flex: 1; }
+.row input[type="number"] { width: 100%; }
+.consent { display: flex; align-items: center; margin-top: 12px; font-size: 15px; }
+.consent input { width: auto; margin-right: 10px; }
 button { 
     width: 100%; 
     padding: 10px; 
@@ -99,28 +90,21 @@ button {
     margin-top: 12px; 
     font-size: 15px; 
 }
-button:hover { 
-    background: #333; 
-}
-#thankYou { 
-    margin-top: 16px; 
-    font-weight: bold; 
-    color: orange; 
-    font-size: 14px;
-}
+button:hover { background: #333; }
+#thankYou { margin-top: 16px; font-weight: bold; color: orange; font-size: 14px; }
+
 @media (max-width:768px) { 
-    .grid { 
-        grid-template-columns: 1fr; 
-    } 
+    .grid { grid-template-columns: 1fr; } 
     .row { flex-direction: column; }
 }
 </style>
 </head>
+
 <body>
 
 <header>Customer Enquiry</header>
-<div class="container">
 
+<div class="container">
 <form id="customer-enquiryForm">
 <div class="grid">
 
@@ -139,36 +123,18 @@ button:hover {
     <div class="half-width">
         <label>Number of Passengers *</label>
         <div class="row">
-            <div>
-                <label>Adult</label>
-                <input type="number" name="adult" min="0" value="0" required>
-            </div>
-            <div>
-                <label>Child &lt;4</label>
-                <input type="number" name="childUnder4" min="0" value="0">
-            </div>
-            <div>
-                <label>Child 4-7</label>
-                <input type="number" name="child4to7" min="0" value="0">
-            </div>
+            <div><label>Adult</label><input type="number" name="adult" min="0" value="0" required></div>
+            <div><label>Child &lt;4</label><input type="number" name="childUnder4" min="0" value="0"></div>
+            <div><label>Child 4-7</label><input type="number" name="child4to7" min="0" value="0"></div>
         </div>
     </div>
 
     <div class="half-width">
         <label>Number of Luggage</label>
         <div class="row">
-            <div>
-                <label>Small</label>
-                <input type="number" name="smallLuggage" min="0" value="0">
-            </div>
-            <div>
-                <label>Medium</label>
-                <input type="number" name="mediumLuggage" min="0" value="0">
-            </div>
-            <div>
-                <label>Large</label>
-                <input type="number" name="largeLuggage" min="0" value="0">
-            </div>
+            <div><label>Small</label><input type="number" name="smallLuggage" min="0" value="0"></div>
+            <div><label>Medium</label><input type="number" name="mediumLuggage" min="0" value="0"></div>
+            <div><label>Large</label><input type="number" name="largeLuggage" min="0" value="0"></div>
         </div>
     </div>
 
@@ -206,6 +172,7 @@ button:hover {
 </div>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCU0_YSYwUpaa73zlS3Soj-ggWrkp6XH0w&libraries=places"></script>
+
 <script>
 function initAutocomplete() {
     const origin = document.getElementById("origin");
@@ -231,7 +198,6 @@ document.getElementById("customer-enquiryForm").addEventListener("submit", async
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
 
-    // Convert numeric fields to integers
     const intFields = ['adult','childUnder4','child4to7','smallLuggage','mediumLuggage','largeLuggage'];
     intFields.forEach(f => data[f] = parseInt(data[f] || 0,10));
 
@@ -259,6 +225,14 @@ If your need is urgent (within 12 hours), please contact us directly: <br>
     } catch(err){
         console.error("Error submitting enquiry:", err);
         document.getElementById("thankYou").innerText = "Error submitting enquiry. Please try again.";
+    }
+});
+
+// Fallback JS for iOS PWA (standalone header hide)
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.navigator.standalone === true) {
+        const header = document.querySelector("header");
+        if(header) header.style.display = "none";
     }
 });
 </script>
