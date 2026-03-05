@@ -3,10 +3,11 @@ const urlsToCache = [
   "/",
   "/index.html",
   "/enquiry.html",   
+  "/css/style.css",
   "/icons/icon-72.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-  "/css/style.css"
+  
 ];
 
 self.addEventListener("install", event => {
