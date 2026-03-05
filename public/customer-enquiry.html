@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <title>Customer Enquiry</title>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        const header = document.querySelector("header");
+        if(header) header.style.display = "none";
+      }
+    });
+    </script>
+
  <!-- MOBILE FRIENDLY META TAG -->
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
