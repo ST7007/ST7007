@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Enquiries</title>
+<style>
+body { font-family:Arial; background:#111; color:#fff; padding:20px; }
+h1 { color:orange; }
+input, select { padding:8px; margin:10px 5px; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+th, td { border:1px solid #333; padding:10px; }
+th { background:#222; cursor:pointer; }
+button { padding:6px 10px; margin:2px; border:none; cursor:pointer; border-radius:4px;}
+button.edit { background:orange; color:#000; }
+button.delete { background:red; color:white; }
+
+/* Modal */
+#detailModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; }
+#modalContent { background:#111; padding:20px; border-radius:10px; width:400px; color:#fff; }
+#modalContent input, #modalContent select { width:100%; padding:6px; margin-bottom:10px; border-radius:4px; }
+#modalContent button { margin-top:5px; }
+
+/* Status summary */
+.status-summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; cursor:pointer; }
+.status-summary div { padding:10px; border-radius:6px; min-width:100px; text-align:center; font-weight:bold; color:#fff; }
+.status-new { background:orange; } .status-quoted { background:blue; } .status-assigned { background:goldenrod; }
+.status-confirmed { background:green; } .status-completed { background:grey; }
+.status-summary div:hover { opacity:0.8; }
+</style>
+</head>
+<body>
+
+<h1>Admin Enquiries</h1>
+
+<!-- Status summary -->
+<div class="status-summary">
+    <div class="status-new" onclick="filterStatus('New')">New: <span id="countNew">0</span></div>
+    <div class="status-quoted" onclick="filterStatus('Quoted')">Quoted: <span id="countQuoted">0</span></div>
+    <div class="status-assigned" onclick="filterStatus('Assigned')">Assigned: <span id="countAssigned">0</span></div>
+    <div class="status-confirmed" onclick="filterStatus('Confirmed')">Confirmed: <span id="countConfirmed">0</span></div>
+    <div class="status-completed" onclick="filterStatus('Completed')">Completed: <span id="countCompleted">0</span></div>
+</div>
+
+<!-- Search + Sort -->
+<input type="text" id="searchBox" placeholder="Search name / phone">
+<select id="sortField">
+    <option value="id">Sort by ID</option>
+    <option value="name">Sort by Name</option>
+    <option value="date">Sort by Date</option>
+</select>
+<button onclick="loadEnquiries()">Apply</button>
+
+<!-- Enquiries Table -->
+<table>
+<thead>
+<tr>
+<th data-key="id">ID</th>
+<th data-key="name">Name</th>
+<th data-key="phone">Phone</th>
+<th data-key="pickup">Pickup</th>
+<th data-key="dropoff">Dropoff</th>
+<th data-key="date">Date</th>
+<th data-key="status">Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<!-- Modal -->
+<div id="detailModal">
+    <div id="modalContent"></div>
+</div>
+
+<script>
+let enquiries = [];
+let currentFilter = '';
+
+// Fetch and render
+function loadEnquiries(){
+    fetch("/api/enquiries")
+    .then(res=>res.json())
+    .then(result=>{
+        if(!result.success) return alert(result.message);
+        enquiries = result.data;
+        renderTable();
+    }).catch(err=>console.error(err));
+}
+
+// Render table
+function renderTable(){
+    const search = document.getElementById("searchBox").value.toLowerCase();
+    const sortKey = document.getElementById("sortField").value;
+
+    let filtered = enquiries.filter(e=>{
+        const matchesSearch = (e.name||'').toLowerCase().includes(search) || (e.phone||'').toLowerCase().includes(search);
+        const matchesFilter = currentFilter ? e.status===currentFilter : true;
+        return matchesSearch && matchesFilter;
+    });
+
+    filtered.sort((a,b)=>{
+        if(a[sortKey] > b[sortKey]) return 1;
+        if(a[sortKey] < b[sortKey]) return -1;
+        return 0;
+    });
+
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    filtered.forEach(e=>{
+        tbody.innerHTML += `
+        <tr>
+            <td>${e.id}</td>
+            <td>${e.name||""}</td>
+            <td>${e.phone||""}</td>
+            <td>${e.pickup||""}</td>
+            <td>${e.dropoff||""}</td>
+            <td>${e.date||""}</td>
+            <td>${e.status||"New"}</td>
+            <td>
+                <button class="edit" onclick="viewDetails(${e.id})">View Details</button>
+                <button class="delete" onclick="deleteEnquiry(${e.id})" ${e.status==='Completed'?'disabled':''}>Delete</button>
+            </td>
+        </tr>
+        `;
+    });
+    updateStatusSummary();
+}
+
+// Status summary update
+function updateStatusSummary(){
+    const counts = {New:0, Quoted:0, Assigned:0, Confirmed:0, Completed:0};
+    enquiries.forEach(e=>{ if(e.status in counts) counts[e.status]++; });
+    document.getElementById("countNew").innerText = counts.New;
+    document.getElementById("countQuoted").innerText = counts.Quoted;
+    document.getElementById("countAssigned").innerText = counts.Assigned;
+    document.getElementById("countConfirmed").innerText = counts.Confirmed;
+    document.getElementById("countCompleted").innerText = counts.Completed;
+}
+
+// Filter by status
+function filterStatus(status){
+    currentFilter = status;
+    renderTable();
+}
+
+// Modal: view/edit
+function viewDetails(id){
+    const e = enquiries.find(x=>x.id==id);
+    if(!e) return;
+    const disableActions = e.status==='Completed';
+
+    document.getElementById("modalContent").innerHTML = `
+        <h2>Enquiry #${e.id}</h2>
+        <label>Name:</label><input id="modalName" value="${e.name||''}" ${disableActions?'disabled':''}>
+        <label>Phone:</label><input id="modalPhone" value="${e.phone||''}" ${disableActions?'disabled':''}>
+        <label>Pickup:</label><input id="modalPickup" value="${e.pickup||''}" ${disableActions?'disabled':''}>
+        <label>Dropoff:</label><input id="modalDropoff" value="${e.dropoff||''}" ${disableActions?'disabled':''}>
+        <label>Date:</label><input id="modalDate" value="${e.date||''}" ${disableActions?'disabled':''}>
+        <label>Status:</label>
+        <select id="modalStatus" ${disableActions?'disabled':''}>
+            <option ${e.status==='New'?'selected':''}>New</option>
+            <option ${e.status==='Quoted'?'selected':''}>Quoted</option>
+            <option ${e.status==='Assigned'?'selected':''}>Assigned</option>
+            <option ${e.status==='Confirmed'?'selected':''}>Confirmed</option>
+            <option ${e.status==='Completed'?'selected':''}>Completed</option>
+        </select>
+        <button onclick="saveModal(${e.id})" ${disableActions?'disabled':''}>Save</button>
+        <button onclick="closeModal()">Close</button>
+    `;
+    document.getElementById("detailModal").style.display="flex";
+}
+
+function closeModal(){ document.getElementById("detailModal").style.display="none"; }
+
+// Save modal
+function saveModal(id){
+    const name = document.getElementById("modalName").value;
+    const phone = document.getElementById("modalPhone").value;
+    const pickup = document.getElementById("modalPickup").value;
+    const dropoff = document.getElementById("modalDropoff").value;
+    const date = document.getElementById("modalDate").value;
+    const status = document.getElementById("modalStatus").value;
+
+    fetch("/api/enquiry/update/"+id,{
+        method:"PUT",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({name,phone,pickup,dropoff,date,status})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert(data.message);
+        closeModal();
+        loadEnquiries();
+    }).catch(err=>console.error(err));
+}
+
+// Delete
+function deleteEnquiry(id){
+    if(!confirm("Delete this enquiry?")) return;
+    fetch("/api/enquiry/delete/"+id,{method:"DELETE"})
+    .then(res=>res.json())
+    .then(data=>{
+        alert(data.message);
+        loadEnquiries();
+    }).catch(err=>console.error(err));
+}
+
+// Table header click sorting
+document.querySelectorAll("th[data-key]").forEach(th=>{
+    th.addEventListener("click", ()=>{ 
+        document.getElementById("sortField").value = th.dataset.key;
+        renderTable();
+    });
+});
+
+// Initial load
+loadEnquiries();
+setInterval(loadEnquiries, 10000); // auto-refresh every 10s
+</script>
+
+</body>
+</html>
