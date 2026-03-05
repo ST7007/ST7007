@@ -15,14 +15,26 @@ if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 // ================= MIDDLEWARE =================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(session({
   secret: "luxride-secret",
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24*60*60*1000 } // 1 day
 }));
+
 app.use(express.static(path.join(__dirname, "public"))); // serve HTML/CSS/JS
 app.set("view engine", "ejs"); // for admin panel templates
+
+// ================= LOGIN PROTECTION =================
+function requireLogin(req, res, next) {
+
+  if (!req.session.admin) {
+    return res.redirect("/admin/login");
+  }
+
+  next();
+}
 
 // ================= DATABASE =================
 const db = new sqlite3.Database("./database.db");
