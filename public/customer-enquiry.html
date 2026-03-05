@@ -8,10 +8,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
+function isStandalone() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||   // iOS Safari
+    document.referrer.includes('android-app://')
+  );
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (isStandalone()) {
     const header = document.querySelector("header");
-    if(header) header.style.display = "none";
+    if (header) header.style.display = "none";
   }
 });
 </script>
