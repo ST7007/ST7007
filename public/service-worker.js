@@ -2,6 +2,7 @@ const CACHE_NAME = "luxride-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
+  "/enquiry.html",   
   "/icons/icon-72.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
