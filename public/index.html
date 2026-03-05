@@ -10,20 +10,31 @@
 <meta name="theme-color" content="#000000">
 
 <!-- Icons -->
-  <!-- Desktop -->
-  <link rel="icon" href="/icons/icon-512.png" type="image/png" media="(min-width: 769px)">
-  <!-- Mobile -->
-  <link rel="icon" href="/icons/icon-192.png" type="image/png" media="(max-width: 768px)">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" href="/icons/icon-72.png" sizes="72x72" type="image/png">
+<link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="icon" href="/icons/icon-512.png" sizes="512x512" type="image/png">
+
+<link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
 
 <!-- CSS -->
 <link rel="stylesheet" href="/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+<!-- Register Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log('Service Worker Registered'))
+    .catch(err => console.error('SW registration failed:', err));
+}
+</script>
+
 <style>
 /* Global Reset */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-body { background: #fff; color: #111; font-size: 16px; }
+body { background: #fff; color: #111; font-size: 16px; padding-top: 70px; }
 
 /* Header */
 header { 
@@ -33,28 +44,9 @@ header {
   display: flex; 
   justify-content: space-between; 
   align-items: center;
-
-  /* Fixed Header */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 999;
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 999;
 }
-header h1 { 
-  color: orange; 
-  font-size: 35px;    
-}
-
-/* Push content below fixed header */
-
-body { 
-  background: #fff; 
-  color: #111; 
-  font-size: 16px;
-  padding-top: 70px;  /* increase this */
-}
-
+header h1 { color: orange; font-size: 35px; }
 
 nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
 nav a:hover { color: orange; }
@@ -82,54 +74,28 @@ footer { background: black; color: white; text-align: center; padding: 25px; }
 
 /* Responsive */
 @media (max-width: 768px) {
-
-body { font-size: 17px; }
-
-/* 🔥 MAKE HEADER SMALLER */
-header {
-    padding: 10px 5%;
+  body { font-size: 17px; }
+  header { padding: 10px 5%; }
+  header h1 { font-size: 20px; }
+  nav a { font-size: 14px; margin-left: 10px; }
+  .hero h2 { font-size: 38px; }
+  .hero p { font-size: 18px; }
+  .section h3 { font-size: 28px; }
+  .car-card { width: 45%; }
 }
-
-header h1 {
-    font-size: 20px;
-}
-
-nav a {
-    font-size: 14px;
-    margin-left: 10px;
-}
-
-}
-
-/* ========== Mobile Overrides ========== */
-@media (max-width: 768px) {
-    body { font-size: 17px; }
-    .hero h2 { font-size: 38px; }
-    .hero p { font-size: 18px; }
-    .section h3 { font-size: 28px; }
-    .car-card { width: 45%; }
-    .grid { grid-template-columns: 1fr; row-gap: 16px; }
-    .row { flex-direction: column; gap: 10px; }
-    header { font-size: 28px; padding: 16px; }
-    input, select, textarea { font-size: 16px; padding: 14px; border-radius: 10px; }
-    button { font-size: 20px; padding: 16px; border-radius: 10px; }
-    .consent { font-size: 16px; }
-    #thankYou { font-size: 16px; margin-top: 20px; }
-}
-
 @media (max-width: 480px) {
-    body { font-size: 18px; }
-    header { flex-direction: column; align-items: flex-start; padding: 15px 5%; }
-    nav { margin-top: 10px; }
-    nav a { display: block; margin: 5px 0; }
-    .hero { height: 60vh; padding: 0 10px; }
-    .hero h2 { font-size: 28px; }
-    .hero p { font-size: 16px; }
-    .section { padding: 50px 5%; }
-    .section h3 { font-size: 24px; }
-    .cars { gap: 15px; flex-direction: column; align-items: center; }
-    .car-card { width: 90%; }
-    .btn { padding: 16px 32px; font-size: 20px; border-radius: 10px; }
+  body { font-size: 18px; }
+  header { flex-direction: column; align-items: flex-start; padding: 15px 5%; }
+  nav { margin-top: 10px; }
+  nav a { display: block; margin: 5px 0; }
+  .hero { height: 60vh; padding: 0 10px; }
+  .hero h2 { font-size: 28px; }
+  .hero p { font-size: 16px; }
+  .section { padding: 50px 5%; }
+  .section h3 { font-size: 24px; }
+  .cars { gap: 15px; flex-direction: column; align-items: center; }
+  .car-card { width: 90%; }
+  .btn { padding: 16px 32px; font-size: 20px; border-radius: 10px; }
 }
 </style>
 
@@ -137,9 +103,7 @@ nav a {
 <body>
 
 <header>
-    
     <h1>LuxRide</h1>
-    
 </header>
 
 <section class="hero">
@@ -153,28 +117,24 @@ nav a {
 <section class="section">
     <h3>Our Vehicles</h3>
     <div class="cars">
-
         <div class="car-card">
             <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/alphard.jpg">
             </a>
             <h4>MPV 6 Seater (Toyota Alphard / Vellfire)</h4>
         </div>
-
         <div class="car-card">
             <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/e_class.jpg">
             </a>
             <h4>Luxury Sedan (Mercedes E / S Class)</h4>
         </div>
-
         <div class="car-card">
             <a href="https://customer-enquiry.ST7007.com" target="_blank">
                 <img src="images/grand_scenic.jpg">
             </a>
             <h4>MPV 6 Seater (Renault Grand Scenic)</h4>
         </div>
-
     </div>
 </section>
 
@@ -192,14 +152,6 @@ nav a {
 <footer>
     © 2026 LuxRide Singapore | Airport Transfers
 </footer>
-
-<!-- ===== REGISTER SERVICE WORKER ===== -->
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js")
-    .then(() => console.log("Service Worker Registered"));
-}
-</script>
 
 </body>
 </html>
