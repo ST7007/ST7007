@@ -136,23 +136,25 @@ button:hover {
     <div><label>Pickup Location *</label><input type="text" id="origin" name="origin" required></div>
     <div><label>Drop-off Location *</label><input type="text" id="destination" name="destination" required></div>
 
-    <div class="half-width">
-        <label>Number of Passengers *</label>
-        <div class="row">
-            <div>
-                <label>Adult</label>
-                <input type="number" name="adult" min="0" value="0" required>
+    <d<!-- Passenger & Luggage Side by Side -->
+        <div class="full-width flex-container">
+            <div class="flex-item">
+                <label>Number of Passengers *</label>
+                <div class="row">
+                    <div><label>Adult</label><input type="number" name="adult" min="0" value="0" required></div>
+                    <div><label>Child &lt;4</label><input type="number" name="childUnder4" min="0" value="0"></div>
+                    <div><label>Child 4-7</label><input type="number" name="child4to7" min="0" value="0"></div>
+                </div>
             </div>
-            <div>
-                <label>Child &lt;4</label>
-                <input type="number" name="childUnder4" min="0" value="0">
-            </div>
-            <div>
-                <label>Child 4-7</label>
-                <input type="number" name="child4to7" min="0" value="0">
+            <div class="flex-item">
+                <label>Number of Luggage</label>
+                <div class="row">
+                    <div><label>Small</label><input type="number" name="smallLuggage" min="0" value="0"></div>
+                    <div><label>Medium</label><input type="number" name="mediumLuggage" min="0" value="0"></div>
+                    <div><label>Large</label><input type="number" name="largeLuggage" min="0" value="0"></div>
+                </div>
             </div>
         </div>
-    </div>
 
     <div class="half-width">
         <label>Number of Luggage</label>
