@@ -57,8 +57,20 @@ table th, table td {
     border: 1px solid rgb(253, 198, 97);
     padding: 8px;
     text-align: left;
+    background: black;
+    color: white;
 }
 table th { background: black; color: white; }
+button.edit-btn, button.delete-btn {
+    padding: 3px 7px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button.edit-btn { background: #4CAF50; color: white; }
+button.delete-btn { background: #f44336; color: white; }
+select { padding: 2px 5px; border-radius: 4px; background: black; color: white; border: 1px solid rgb(253,198,97);}
 </style>
 </head>
 <body>
@@ -127,6 +139,93 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
 });
 
+// Make table rows editable and add delete button
+function makeTableInteractive(tableId){
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const thead = table.querySelector('thead tr');
+
+    // Add Action column if not exists
+    if(!thead.querySelector('.action-header')){
+        const th = document.createElement('th');
+        th.textContent = 'Action';
+        th.classList.add('action-header');
+        thead.appendChild(th);
+    }
+
+    tbody.querySelectorAll('tr').forEach(tr=>{
+        if(tr.querySelector('.action-cell')) return; // skip if already added
+        const td = document.createElement('td');
+        td.classList.add('action-cell');
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.className = 'edit-btn';
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.className = 'delete-btn';
+
+        td.appendChild(editBtn);
+        td.appendChild(delBtn);
+        tr.appendChild(td);
+
+        // Add dropdown for "status" column
+        const statusIndex = Array.from(thead.cells).findIndex(h=>h.textContent.toLowerCase() === 'status');
+        if(statusIndex >= 0){
+            const statusCell = tr.cells[statusIndex];
+            const select = document.createElement('select');
+            ['Quoted','Pending','Confirmed','Assigned','Complete'].forEach(opt=>{
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                if(statusCell.textContent === opt) option.selected = true;
+                select.appendChild(option);
+            });
+            statusCell.innerHTML = '';
+            statusCell.appendChild(select);
+        }
+
+        // Edit / Save logic
+        editBtn.addEventListener('click', ()=>{
+            const isEditing = editBtn.textContent === 'Edit';
+            Array.from(tr.cells).forEach((cell, idx)=>{
+                if(cell === td) return;
+                if(cell.querySelector('select')) return; // skip dropdown
+                cell.contentEditable = isEditing;
+                if(isEditing){
+                    cell.style.backgroundColor = '#222'; // dark background while editing
+                    cell.style.color = '#fff';           // keep text white
+                } else {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = '';
+                }
+            });
+            editBtn.textContent = isEditing ? 'Save' : 'Edit';
+
+            if(!isEditing){
+                const updatedData = Array.from(tr.cells).map(c=>{
+                    if(c.querySelector('select')) return c.querySelector('select').value;
+                    return c.textContent;
+                });
+                console.log('Updated row:', updatedData);
+                // Send updatedData to backend via fetch/AJAX if needed
+            }
+        });
+
+        // Delete logic
+        delBtn.addEventListener('click', ()=>{
+            if(confirm('Are you sure you want to delete this record?')){
+                tr.remove();
+                console.log('Deleted row');
+                // Send delete request to backend if needed
+            }
+        });
+    });
+}
+
 // Generic fetch & populate function
 async function fetchData(apiUrl, tableId, headerId){
     try {
@@ -160,12 +259,15 @@ async function fetchData(apiUrl, tableId, headerId){
             tbody.appendChild(tr);
         });
 
+        // Make table interactive
+        makeTableInteractive(tableId);
+
     } catch(err){
         console.error(`Error fetching ${apiUrl}:`, err);
     }
 }
 
-// Fetch all tables immediately
+// Fetch all tables
 fetchData('/api/enquiries', 'enquiriesTable', 'enquiriesHeader');
 fetchData('/api/drivers', 'driversTable', 'driversHeader');
 fetchData('/api/customers', 'customersTable', 'customersHeader');
