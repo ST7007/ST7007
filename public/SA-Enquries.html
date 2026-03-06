@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Enquiries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: 'Montserrat','Roboto','Open Sans',Arial,sans-serif;
+    background: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background: black;
+    color: orange;
+    text-align: center;
+    font-size: 33px;
+    font-weight: bold;
+    padding: 16px;
+}
+.container {
+    max-width: 2400px;
+    margin: 20px auto;
+    background: black;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 12px black;
+}
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.tabs button {
+    flex: 1;
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+}
+.tabs button.active { background: #333; color: orange; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+table th, table td {
+    border: 1px solid rgb(253, 198, 97);
+    padding: 8px;
+    text-align: left;
+}
+table th { background: black; color: white; }
+</style>
+</head>
+<body>
+
+<header>Admin Panel</header>
+
+<div class="container" id="adminPanel">
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="enquiriesTab">Enquiries</button>
+        <button class="tab-btn" data-tab="driversTab">Drivers</button>
+        <button class="tab-btn" data-tab="customersTab">Customers</button>
+        <button class="tab-btn" data-tab="bookingsTab">Bookings</button>
+    </div>
+
+    <!-- Enquiries Table -->
+    <div id="enquiriesTab" class="tab-content active">
+        <table id="enquiriesTable">
+            <thead>
+                <tr id="enquiriesHeader"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Drivers Table -->
+    <div id="driversTab" class="tab-content">
+        <table id="driversTable">
+            <thead>
+                <tr id="driversHeader"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Customers Table -->
+    <div id="customersTab" class="tab-content">
+        <table id="customersTable">
+            <thead>
+                <tr id="customersHeader"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Bookings Table -->
+    <div id="bookingsTab" class="tab-content">
+        <table id="bookingsTable">
+            <thead>
+                <tr id="bookingsHeader"></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+// Tabs switching
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tab=>tab.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+
+// Generic fetch & populate function
+async function fetchData(apiUrl, tableId, headerId){
+    try {
+        const res = await fetch(apiUrl);
+        const json = await res.json();
+        if(!json.success) throw new Error(json.message);
+
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        const thead = document.querySelector(`#${headerId}`);
+        tbody.innerHTML = '';
+        thead.innerHTML = '';
+
+        if(json.data.length === 0) return;
+
+        // Dynamically create headers from object keys
+        const keys = Object.keys(json.data[0]);
+        keys.forEach(k=>{
+            const th = document.createElement('th');
+            th.textContent = k;
+            thead.appendChild(th);
+        });
+
+        // Insert rows
+        json.data.forEach(row=>{
+            const tr = document.createElement('tr');
+            keys.forEach(k=>{
+                const td = document.createElement('td');
+                td.textContent = row[k] ?? '';
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+
+    } catch(err){
+        console.error(`Error fetching ${apiUrl}:`, err);
+    }
+}
+
+// Fetch all tables immediately
+fetchData('/api/enquiries', 'enquiriesTable', 'enquiriesHeader');
+fetchData('/api/drivers', 'driversTable', 'driversHeader');
+fetchData('/api/customers', 'customersTable', 'customersHeader');
+fetchData('/api/bookings', 'bookingsTable', 'bookingsHeader');
+</script>
+
+</body>
+</html>
